@@ -1,0 +1,845 @@
+-- warn(getinstructions(function() end)[1]) -- if incorrect then u get (g)raped.
+-- warn(getfflag("MacQualityAssuranceConfigReportEnabled"))
+-- warn(getfflag("MacQualityAssurancePeriod")) -- 5
+-- warn(getfflag("MacQualityAssurancePerMyriad")) -- 100
+-- warn(getfflag("LuauDirectFieldGet"))
+-- warn(getfflag("LuauUdataDirectAccess5"))
+-- warn(getfflag("LuauIntegerType"))
+-- warn(getfflag("LuauIntegerLibrary2"))
+-- warn(getfflag("LuauClosureUsageCounter"))
+-- warn(getfflag("DebugLuauUserDefinedClassesRuntime"))
+-- warn(getfflag("LuauCallFeedback"))
+-- warn(getfflag("LuauYieldIter2"))
+-- warn(getfflag("LuauResumeRestoreCcalls"))
+
+
+local function a()
+getgenv().DebugPrint = false
+
+local Thread = {}
+local Assert = {}
+Thread.__index = Thread
+
+function Thread.new()
+  return setmetatable({
+    libraries = {},
+    stats = {
+      passed = 0,
+      failed = 0,
+      skipped = 0,
+      total = 0,
+      time = 0
+    }
+  }, Thread)
+end
+
+function Assert.istrue(cond, msg)
+  if not cond then
+    return error(msg or "expected true", 3)
+  end
+end
+
+function Assert.isfalse(cond, msg)
+  if cond then
+    return error(msg or "expected false", 3)
+  end
+end
+
+function Assert.equals(a, b, msg)
+  if a ~= b then
+    return error(msg or ("expected " .. tostring(a) .. " == " .. tostring(b)), 3)
+  end
+end
+
+function Assert.prerequisites(tbl)
+  -- uh
+  return true;
+end
+
+function Thread:library(name, fn)
+  local library = {
+    name = name,
+    tests = {}
+  }
+
+  local function test(testName, testFn)
+    table.insert(library.tests, {
+      name = testName,
+      fn = testFn
+    })
+  end
+
+  fn(test, Assert)
+  table.insert(self.libraries, library)
+end
+
+function Thread:run()
+  local startAll = os.clock()
+
+  for _, library in ipairs(self.libraries) do
+    for _, test in ipairs(library.tests) do
+      self.stats.total += 1
+      local t0 = os.clock()
+
+      local finished = false
+      local ok, err
+      print("Running test:", test.name)
+      task.spawn(function()
+        ok, err = pcall(test.fn)
+        finished = true
+      end)
+
+      while not finished do
+        task.wait()
+      end
+
+      local elapsed = os.clock() - t0
+      self.stats.time += elapsed
+
+      if ok then
+        self.stats.passed += 1
+        test.result = "PASS"
+        print("Past", test.name)
+      else
+        self.stats.failed += 1
+        test.result = "FAIL"
+        test.error = tostring(err)
+        print("❌ ", test.name, "failed with error:", tostring(err))
+      end
+
+      test.time = elapsed
+      test.library = library.name
+    end
+  end
+
+  self:report(os.clock() - startAll)
+end
+
+function Thread:report(totalTime)
+  warn("test yay")
+  warn("Total Tests : " .. tostring(self.stats.total))
+  warn("Passed      : " .. tostring(self.stats.passed))
+  warn("Failed      : " .. tostring(self.stats.failed))
+  warn("Time        : " .. string.format("%.4fs", totalTime))
+
+  for _, library in ipairs(self.libraries) do
+    print("\n[" .. tostring(library.name) .. "]")
+    for _, test in ipairs(library.tests) do
+      if test.result == "PASS" then
+        print("  ✅ " .. tostring(test.name) .. " (" .. string.format("%.4fs", test.time) .. ")")
+      else
+        warn("  ❌ " .. tostring(test.name))
+        warn("    ↳ " .. tostring(test.error))
+      end
+    end
+  end
+
+  warn("════════════════════════════════════════════")
+end
+
+local runner = Thread.new()
+
+runner:library("Debug", function(test, Assert)
+  test("getproto", function()
+    Assert.prerequisites({ getproto, newlclosure, newcclosure, getprotos })
+    local b, c, d, e, f, g, h, i, j;
+    local a = function()
+      b = function() h = true end
+      c = newlclosure(newcclosure(newlclosure(newcclosure(function(...) return "blakk rokkstar" end))))
+      d = function() return newlclosure(function()
+          task.wait()
+          return newcclosure(loadstring("return 'Yo twin', 1"))()
+        end) end
+      e = function() return d()() end
+      g = function(...)
+        Assert.istrue(#{ ... } == 2, "getproto should forward the correct number of arguments")
+        Assert.istrue(select(1, { ... }) == "twin", "getproto should forward the correct argument")
+        Assert.istrue(select(2, { ... }) == "9", "getproto should forward the correct argument [1]")
+        return ...
+      end; f = (function()
+        i = true
+        return i
+      end)
+    end
+    a()
+    Assert.istrue(#debug.getprotos(function() (function() end)() end) == 1, "Incorrect number of protos found")
+    Assert.istrue(#debug.getprotos(a) == 6, "Incorrect number of protos found [1]")
+
+    local res, err = pcall(debug.getproto, a, 0)
+    Assert.isfalse(res, "getproto should not allow invalid indexes")
+    local res, err = pcall(debug.getproto, a, 0 / 0)
+    Assert.isfalse(res, "getproto should not allow invalid indexes [2]")
+    local res, err = pcall(debug.getproto, a, math.huge)
+    Assert.isfalse(res, "getproto should not allow invalid indexes [3]")
+    local res, err = pcall(debug.getproto, a, 1)
+    Assert.istrue(res, "An inactive proto should not error upon call")
+    Assert.isfalse(h, "An inactive proto should not be callable")
+    Assert.istrue(debug.getproto(a, 1, true)[1] == b, "The active proto returned should not be different to the original")
+    local res, err = pcall(debug.getproto, a, 2)
+    Assert.istrue(res, "An inactive proto should not error upon call [1]")
+    Assert.isfalse(h, "An inactive proto should not be callable [1]")
+
+    local slnaf, slnaf2, slnaf3, slnaf4 = debug.info(debug.getproto(a, 5), 'slna')
+    local slnaf7, slnaf8, slnaf9, slnaf10 = debug.info(f, 'slna')
+    Assert.istrue(slnaf == slnaf7, "The debug.info of the inactive proto should not be different to the original [1]")
+    -- Assert.istrue(slnaf2 == slnaf8, "The debug.info of the inactive proto should not be different to the original [2]")
+    Assert.istrue(slnaf3 == slnaf9, "The debug.info of the inactive proto should not be different to the original [3]")
+    Assert.istrue(slnaf4 == slnaf10, "The debug.info of the inactive proto should not be different to the original [4]")
+    local slnaf = debug.getinfo(debug.getproto(a, 5), 'sn')
+    local slnaf2 = debug.getinfo(f, 'snau')
+    for k, v in pairs(slnaf) do
+      Assert.istrue(slnaf2[k] == v,
+        ("The debug.info of the inactive proto should not be different to the original ['%s']: %s; %s"):format(k,
+          tostring(v), tostring(slnaf2[k])))
+    end
+
+    local slnaf = debug.getinfo(debug.getproto(a, 3, true)[1], 'snafu')
+    local slnaf2 = debug.getinfo(d, 'snafu')
+    for k, v in pairs(slnaf) do
+      Assert.istrue(slnaf2[k] == v,
+        ("The debug.info of the active proto should not be different to the original ['%s']: %s; %s"):format(k,
+          tostring(v), tostring(slnaf2[k])))
+    end
+
+    Assert.istrue(debug.getproto(a, 2, true)[1] ~= c, "The active proto returned should not differ with original [1]")
+    Assert.istrue(#debug.getproto(a, 2, true) == 1, "Only 1 proto should exist")
+    Assert.istrue(debug.getproto(a, 2, true)[1]() == "blakk rokkstar", "Proto did not return the right value")
+    Assert.isfalse(debug.getproto(a, 5)() == f, "An inactive proto should not be callable [2]")
+    Assert.istrue(
+    select(1, debug.getproto(a, 4, true)[1]()) == "Yo twin" and select(2, debug.getproto(a, 4, true)[1]()) == 1,
+      "Proto did not return the right value [1]")
+    Assert.isfalse(debug.getproto(a, 2, true) == debug.getproto(a, 2, false), "Check arguments")
+    debug.getproto(a, 6, true)[1]("twin", "9")
+
+    local res, suc = pcall(function() return getproto(
+      getscriptclosure(game.Players.LocalPlayer.PlayerScripts.PlayerModule), 4, true)[1]() end)
+    Assert.isfalse(res, "Should not succeed")
+    Assert.istrue(suc:find("controls"), "Invalid error message")
+
+    local slnaf1, slnaf2, slnaf3 = debug.info(
+    getproto(getscriptclosure(game.Players.LocalPlayer.PlayerScripts.PlayerModule), 4, true)[1], "na")
+    Assert.istrue(slnaf1 == "GetClickToMoveController", "Did not get the correct proto")
+    Assert.istrue(slnaf2 == 1, "Did not get the correct proto [1]")
+    Assert.istrue(slnaf3 == false, "Did not get the correct proto [2]")
+  end)
+end)
+
+runner:library("Signals", function(test, Assert)
+  test("replicatesignal", function()
+    Assert.prerequisites({ replicatesignal })
+    game.Players.LocalPlayer.Character.Humanoid.Health = 100   -- Has to be 100 or else regeneration
+    local a, b, c, d = false, false, false, false;
+    local signal = game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+        a = true
+    end)
+
+    local signal2 = game.Players.LocalPlayer.Kill:Connect(function()
+      b = true
+    end)
+
+    if getgenv().DebugPrint then
+      print("replicating signal #1")
+    end
+
+    replicatesignal(game.Players.LocalPlayer.Kill)
+    task.wait()
+    Assert.isfalse(b, "replicatesignal did not replicate the signal properly [1]")
+    Assert.istrue(game.Players.LocalPlayer.Character.Humanoid.Health == 100, "replicatesignal did not replicate the signal properly [2]")
+    if getgenv().DebugPrint then
+      print("waiting for character")
+    end
+    task.wait(game.Players.RespawnTime + 2)
+    local character
+    local start = tick()
+    repeat
+      task.wait()
+      character = game.Players.LocalPlayer.Character
+    until character or tick() - start >= 5
+    Assert.istrue(a, "replicatesignal did not replicate the signal properly [3]")
+    task.wait()
+    game.Players.LocalPlayer.Character.Humanoid.Health = 100
+
+    local signal3 = game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints:Connect(function()
+      d = true
+    end)
+
+    if getgenv().DebugPrint then
+      print("replicating signal #2")
+    end
+
+    replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
+    task.wait()
+    Assert.isfalse(d, "replicatesignal did not replicate the signal properly [4]")
+    Assert.istrue(game.Players.LocalPlayer.Character.Humanoid.Health == 100,
+      "replicatesignal did not replicate the signal properly [5]")
+    if getgenv().DebugPrint then
+      print("waiting for character")
+    end
+    task.wait(game.Players.RespawnTime + 2)
+    local character
+    local start = tick()
+    repeat
+      task.wait()
+      character = game.Players.LocalPlayer.Character
+    until character or tick() - start >= 5
+    Assert.istrue(a, "replicatesignal did not replicate the signal properly [6]")
+    signal:Disconnect()
+    signal2:Disconnect()
+    signal3:Disconnect()
+    if getgenv().DebugPrint then
+      print("checking replicatesignal arguments")
+    end
+    Assert.isfalse(pcall(replicatesignal, game.TeleportService.TeleportInitFailedInternal), "replicatesignal should throw an error if not enough arguments are passed")
+    Assert.isfalse(pcall(replicatesignal, game.TeleportService.TeleportInitFailedInternal, 0, 0, 0, 0, 0, 0), "replicatesignal should throw an error if too many arguments are passed")
+    Assert.isfalse(pcall(replicatesignal, game.TeleportService.TeleportInitFailedInternal, 0, 0, 0, 0, 0, 0), "replicatesignal should throw an error if too many arguments are passed")
+    Assert.istrue(pcall(replicatesignal, game.TeleportService.TeleportInitFailedInternal, game.Players.LocalPlayer, Enum.TeleportResult.Failure, "a", "b"), "replicatesignal should not have thrown an error")
+    local stat, msg = pcall(replicatesignal, game.TeleportService.TeleportInitFailedInternal, game.Players.LocalPlayer, 0, "a", "\0");
+    Assert.isfalse(pcall(replicatesignal, game.TeleportService.TeleportInitFailedInternal, game.Players.LocalPlayer, Enum.TeleportResult.Failure, "a", 1), "replicatesignal should have thrown an error")
+    Assert.isfalse(stat, "replicatesignal should throw errors for invalid arguments")
+    Assert.istrue(msg:find("expected TeleportResult"), "replicatesignal should throw errors for misused arguments")
+    return true
+  end)
+
+  test("firesignal", function()
+    Assert.prerequisites({ firesignal })
+    local trap, a, b, c, d, e, f = false, false, false, false, 0, false, 0;
+    local signal = game.Players.LocalPlayer.Kill:Connect(function()
+      trap = true
+    end)
+
+    pcall(firesignal, game.Players.LocalPlayer.Kill)
+    Assert.isfalse(trap, "firesignal should not work on C signals")
+    signal:Disconnect()
+
+    local args;
+    local parts = Instance.new("TextButton")
+    local part = Instance.new("Part");
+
+    part.ChildAdded:Connect(function(...)
+      if not args then
+        args = { ... }
+      else
+        Assert.istrue(debug.info(2, "slnaf") == nil and debug.info(3, "slnaf") == nil and debug.info(4, "slnaf") == nil,
+          "firesignal should not increase the call stack")
+        Assert.equals(#args, select("#", ...), "firesignal should forward the correct number of arguments [1]")
+        for i = 1, #args do
+          Assert.equals(args[i], select(i, ...), "firesignal should forward correct arguments [1]")
+        end
+        if not a then
+          a = true
+        elseif a and not b then
+          b = true
+        end
+      end
+    end)
+
+    parts.Parent = part
+    a = false
+    firesignal(part.ChildAdded, parts)
+    task.wait()
+    Assert.istrue(a, "firesignal did not fire the event [1]")
+    args = nil
+    local num = math.random(41, 67)
+    firesignal(part.ChildAdded, "lebron", parts, "hello", num, true)
+    task.wait()
+    b = false
+    firesignal(part.ChildAdded, "lebron", parts, "hello", num, true)
+    task.wait()
+    Assert.istrue(b, "firesignal did not fire the event [2]")
+
+    parts.MouseButton1Click:Connect(function(...)
+      Assert.istrue(#{ ... } == 0, "firesignal should forward the correct number of arguments [2]")
+      c = true;
+      d += 1;
+    end)
+    parts.MouseButton1Down:Once(function(...)
+      Assert.istrue(#{ ... } == 0, "firesignal should forward the correct number of arguments [3]")
+      e = true;
+      f += 1;
+    end)
+    firesignal(parts.MouseButton1Click);
+    task.wait()
+    Assert.istrue(c, "firesignal did not fire the event [3]")
+    for i = 0, 100 do
+      firesignal(parts.MouseButton1Click);
+      task.wait()
+    end
+    Assert.istrue(d == 102, "firesignal did not fire the event [4]")
+    firesignal(parts.MouseButton1Down);
+    task.wait()
+    Assert.istrue(e, "firesignal did not fire the event [4]")
+    Assert.istrue(f == 1, "firesignal did not fire the event [5]")
+    part:Destroy()
+    parts:Destroy()
+    return true
+  end)
+
+  test("getconnections", function()
+    Assert.prerequisites({ getconnections })
+    local a, b, c, d, e, f, g, h, i, j, k, l, m, n, o = false, false, false, false, false, false, false, false, false,
+        false, false, false, false, 0, false
+    local signal, signal2, signal3, signal4;
+    local args;
+    local folder = Instance.new("Folder")
+    local parta = Instance.new("Part", folder)
+    local partb = Instance.new("Part", folder)
+    local partc = Instance.new("Part", folder)
+    local partd = Instance.new("Part", folder)
+    local parte = Instance.new("Part", folder)
+    local partf = Instance.new("Part")
+    local thread = task.spawn(function()
+      signal = folder.AttributeChanged:Connect(function(...)
+        if not args then
+          args = { ... };
+        end
+        if (select(1, ...) == "more chaos") then
+          Assert.istrue(#{ ... } == 1, "getconnections.Function should forward the correct number of arguments [2]")
+          c = true
+        elseif not a then
+          Assert.istrue(#args == 0, "getconnections.Function should forward the correct number of arguments [1]")
+          a = true
+        elseif not b then
+          Assert.equals(#args, select("#", ...), "getconnections.Fire should forward the correct number of arguments [1]")
+          for i = 1, #args do
+            Assert.equals(args[i], select(i, ...), "getconnections.Fire should forward correct arguments [1]")
+          end
+          b = true
+        elseif not d then
+          Assert.equals(#args, select("#", ...),
+            "getconnections.Defer should forward the correct number of arguments [1]")
+          for i = 1, #args do
+            Assert.equals(args[i], select(i, ...), "getconnections.Defer should forward correct arguments [1]")
+          end
+          d = true
+        end
+        return "triggered"
+      end)
+
+      signal2 = folder.ChildRemoved:Connect(function(...)
+        i = true
+      end)
+
+      signal3 = folder.ChildAdded:Once(function(...)
+        if not args then
+          args = { ... };
+        end
+
+        -- Assert.istrue(debug.info(2, "slnaf") == nil and debug.info(3, "slnaf") == nil and debug.info(4, "slnaf") == nil, "getconnections.Function(...) should not increase the call stack")
+        if (select(1, ...) == "the xperiment") then
+          Assert.istrue(#{ ... } == 1,
+            "getconnections.Function should forward the correct number of arguments (Once, [2])")
+          g = true
+        elseif not e then
+          Assert.istrue(#args == 0, "getconnections.Function should forward the correct number of arguments (Once, [1])")
+          e = true
+        elseif not f then
+          -- Assert.istrue(debug.info(2, "slnaf") == nil and debug.info(3, "slnaf") == nil and debug.info(4, "slnaf") == nil, "getconnections:Fire(...) should not increase the call stack")
+          Assert.equals(#args, select("#", ...),
+            "getconnections.Fire should forward the correct number of arguments (Once, [1])")
+          for i = 1, #args do
+            Assert.equals(args[i], select(i, ...), "getconnections.Fire should forward correct arguments (Once, [1])")
+          end
+          f = true
+        elseif not h then
+          -- Assert.istrue(debug.info(2, "slnaf") == nil and debug.info(3, "slnaf") == nil and debug.info(4, "slnaf") == nil, "getconnections:Defer(...) should not increase the call stack")
+          Assert.equals(#args, select("#", ...),
+            "getconnections.Defer should forward the correct number of arguments (Once, [1])")
+          for i = 1, #args do
+            Assert.equals(args[i], select(i, ...), "getconnections.Defer should forward correct arguments (Once, [1])")
+          end
+          h = true
+        end
+        return "once"
+      end)
+
+      signal4 = folder.DescendantAdded:Once(function(...)
+        j = true
+      end)
+    end)
+
+    Assert.istrue(#getconnections(folder.Changed) == 0,
+      "getconnections should return an empty table for signals with no connections")
+
+    local connection = getconnections(folder.AttributeChanged)[1]
+    Assert.istrue(typeof(connection.Fire) == "function", "getconnections.Fire did not return a function")
+    Assert.istrue(typeof(connection.Defer) == "function", "getconnections.Defer did not return a function")
+    Assert.istrue(typeof(connection.Disable) == "function", "getconnections.Disable did not return a function")
+    Assert.istrue(typeof(connection.Enable) == "function", "getconnections.Enable did not return a function")
+    Assert.istrue(typeof(connection.Disconnect) == "function", "getconnections.Disconnect did not return a function")
+    Assert.istrue(typeof(connection.Enabled) == "boolean", "getconnections.Enabled did not return a boolean")
+    Assert.istrue(typeof(connection.ForeignState) == "boolean", "getconnections.ForeignState did not return a boolean")
+    Assert.istrue(typeof(connection.LuaConnection) == "boolean", "getconnections.LuaConnection did not return a boolean")
+    Assert.istrue(typeof(connection.Function) == "function", "getconnections.Function did not return a function")
+    Assert.istrue(typeof(connection.Thread) == "thread", "getconnections.Thread did not return a thread")
+    Assert.istrue(connection.LuaConnection, "getconnections failed to identify a LuaConnection")
+    Assert.isfalse(connection.ForeignState, "getconnections failed to identify a ForeignState")
+    Assert.istrue(connection.Enabled, "getconnections failed to identify an enabled connection")
+    Assert.isfalse(connection.ForeignState == connection.LuaConnection,
+      "A RBXScriptSignal cannot be a ForeignConnection and a LuaConnection")
+    Assert.istrue(connection.Function() == "triggered", "getconnections.Function did not return a consistent value")
+    a = false
+    Assert.istrue(connection.Function() == connection.Function(),
+      "getconnections.Function did not return a consistent value [1]")
+    a = false
+    Assert.istrue(connection.Function() == connection.Function("more chaos"),
+      "getconnections.Function did not return a consistent value [2]")
+    Assert.istrue(c, "getconnections.Function did not forward arguments properly")
+    Assert.istrue(connection.Thread == thread, "getconnections.Thread did not return the correct thread")
+    args = nil
+    folder:SetAttribute("tuff")
+    b = false
+    connection:Fire("tuff")
+    task.wait()
+    Assert.istrue(b, "getconnections did not fire the event")
+    connection:Defer("tuff")
+    task.defer(function()
+      Assert.istrue(d, "getconnections did not defer the event")
+    end)
+
+    signal:Disconnect()
+    args = nil
+
+    if getgenv().DebugPrint then
+      print("LuaConnection passed")
+    end
+
+    connection = getconnections(folder.ChildRemoved)[1]
+    connection:Disable()
+    parta.Parent = nil
+    task.wait()
+    Assert.isfalse(i, "The connection should not fire when disabled")
+    Assert.isfalse(connection.Enabled, "getconnections failed to identify a disabled connection [1]")
+    connection:Enable()
+    partb.Parent = nil
+    task.wait()
+    Assert.istrue(i, "The connection should fire when re-enabled")
+    Assert.istrue(connection.Enabled, "getconnections failed to identify an enabled connection [2]")
+    i = false
+    connection:Disconnect()
+    partc.Parent = nil
+    task.wait()
+    Assert.isfalse(i, "The connection should not fire when disconnected")
+    Assert.isfalse(connection.Enabled, "getconnections failed to identify a disabled connection [3]")
+
+    signal2:Disconnect()
+    args = nil
+
+    if getgenv().DebugPrint then
+      print("LuaConnection [2] passed")
+    end
+
+    local connection = getconnections(folder.ChildAdded)[1]
+    Assert.istrue(typeof(connection.Fire) == "function", "getconnections.Fire did not return a function (Once)")
+    Assert.istrue(typeof(connection.Defer) == "function", "getconnections.Defer did not return a function (Once)")
+    Assert.istrue(typeof(connection.Disable) == "function", "getconnections.Disable did not return a function (Once)")
+    Assert.istrue(typeof(connection.Enable) == "function", "getconnections.Enable did not return a function (Once)")
+    Assert.istrue(typeof(connection.Disconnect) == "function",
+      "getconnections.Disconnect did not return a function (Once)")
+    Assert.istrue(typeof(connection.Enabled) == "boolean", "getconnections.Enabled did not return a boolean (Once)")
+    Assert.istrue(typeof(connection.ForeignState) == "boolean",
+      "getconnections.ForeignState did not return a boolean (Once)")
+    Assert.istrue(typeof(connection.LuaConnection) == "boolean",
+      "getconnections.LuaConnection did not return a boolean (Once)")
+    Assert.istrue(typeof(connection.Function) == "function", "getconnections.Function did not return a function (Once)")
+    Assert.istrue(typeof(connection.Thread) == "thread", "getconnections.Thread did not return a thread (Once)")
+    Assert.istrue(connection.LuaConnection, "getconnections failed to identify a LuaConnection (Once)")
+    Assert.isfalse(connection.ForeignState, "getconnections failed to identify a ForeignState (Once)")
+    Assert.istrue(connection.Enabled, "getconnections failed to identify an enabled connection (Once, [1])")
+    Assert.isfalse(connection.ForeignState == connection.LuaConnection,
+      "A RBXScriptSignal cannot be a ForeignConnection and a LuaConnection (Once)")
+    Assert.istrue(connection.Function() == "once", "getconnections.Function did not return a consistent value (Once)")
+    e = false
+    Assert.istrue(connection.Function() == connection.Function(),
+      "getconnections.Function did not return a consistent value (Once, [1])")
+    e = false
+    Assert.istrue(connection.Function() == connection.Function("the xperiment"),
+      "getconnections.Function did not return a consistent value (Once, [2])")
+    Assert.istrue(g, "getconnections.Function did not forward arguments properly (Once)")
+    Assert.istrue(connection.Thread == thread, "getconnections.Thread did not return the correct thread (Once)")
+    args = nil
+    folder:SetAttribute("tuff")
+    f = false
+    connection:Fire("tuff")
+    task.wait()
+    Assert.istrue(f, "getconnections did not fire the event")
+    Assert.isfalse(connection.Enabled, "event should be disabled")
+    assert(not getconnections(folder.ChildAdded)[1], "connection should not exist")
+    local hi;
+    hi = function(...)
+      if not args then
+        args = { ... };
+      end
+      Assert.istrue(debug.info(1, 'f') == hi)
+      Assert.istrue(debug.info(2, "slnaf") == nil and debug.info(3, "slnaf") == nil and debug.info(4, "slnaf") == nil,
+        "getconnections.Function(...) should not increase the call stack")
+      if (select(1, ...) == "the xperiment") then
+        Assert.istrue(#{ ... } == 1, "getconnections.Function should forward the correct number of arguments (Once, [2])")
+        g = true
+      elseif not e then
+        Assert.istrue(#args == 0, "getconnections.Function should forward the correct number of arguments (Once, [1])")
+        e = true
+      elseif not f then
+        Assert.istrue(debug.info(2, "slnaf") == nil and debug.info(3, "slnaf") == nil and debug.info(4, "slnaf") == nil,
+          "getconnections:Fire(...) should not increase the call stack")
+        Assert.equals(#args, select("#", ...),
+          "getconnections.Fire should forward the correct number of arguments (Once, [1])")
+        for i = 1, #args do
+          Assert.equals(args[i], select(i, ...), "getconnections.Fire should forward correct arguments (Once, [1])")
+        end
+        f = true
+      elseif not h then
+        Assert.istrue(debug.info(2, "slnaf") == nil and debug.info(3, "slnaf") == nil and debug.info(4, "slnaf") == nil,
+          "getconnections:Defer(...) should not increase the call stack")
+        Assert.equals(#args, select("#", ...),
+          "getconnections.Defer should forward the correct number of arguments (Once, [1])")
+        for i = 1, #args do
+          Assert.equals(args[i], select(i, ...), "getconnections.Defer should forward correct arguments (Once, [1])")
+        end
+        h = true
+      end
+      return "once"
+    end
+    signal3 = folder.ChildAdded:Once(hi)
+    connection = getconnections(folder.ChildAdded)[1]
+    connection:Defer("tuff")
+    task.defer(function()
+      Assert.istrue(h, "getconnections did not defer the event")
+    end)
+
+    signal3:Disconnect()
+    args = nil
+
+    if getgenv().DebugPrint then
+      print("OnceConnection passed")
+    end
+
+    connection = getconnections(folder.DescendantAdded)[1]
+    connection:Disable()
+    partf.Parent = parte
+    task.wait()
+    Assert.isfalse(j, "The connection should not fire when disabled (Once)")
+    Assert.isfalse(connection.Enabled, "getconnections failed to identify a disabled connection (Once, [1])")
+    partf.Parent = nil
+    connection:Enable()
+    partf.Parent = parte
+    task.wait()
+    Assert.istrue(j, "The connection should fire when re-enabled (Once)")
+    Assert.isfalse(connection.Enabled, "getconnections failed to identify a disabled connection (Once, [2])")
+    partf.Parent = nil
+    j = false
+    connection:Disconnect()
+    partf.Parent = parte
+    task.wait()
+    Assert.isfalse(j, "The connection should not fire when disconnected (Once)")
+    Assert.isfalse(connection.Enabled, "getconnections failed to identify a disabled connection (Once, [3])")
+
+    signal4:Disconnect()
+    args = nil
+
+    if getgenv().DebugPrint then
+      print("OnceConnection [2] passed")
+    end
+
+    local partg = Instance.new("Part")
+    local thread3;
+    local thread2 = task.spawn(function()
+      thread3 = task.spawn(function()
+        partg.Changed:Wait()
+        k = true
+      end)
+      thread4 = task.spawn(function()
+        partg.DescendantRemoving:Wait()
+        l = true
+      end)
+      thread5 = task.spawn(function()
+        partg.AncestryChanged:Wait()
+        m = true
+      end)
+    end)
+
+    connection = getconnections(partg.Changed)[1]
+    local connection2 = getconnections(partg.DescendantRemoving)[1]
+    local connection3 = getconnections(partg.AncestryChanged)[1]
+    Assert.istrue(typeof(connection.Fire) == "function", "getconnections.Fire did not return a function (Wait)")
+    Assert.istrue(typeof(connection.Defer) == "function", "getconnections.Defer did not return a function (Wait)")
+    Assert.istrue(typeof(connection.Disable) == "function", "getconnections.Disable did not return a function (Wait)")
+    Assert.istrue(typeof(connection.Enable) == "function", "getconnections.Enable did not return a function (Wait)")
+    Assert.istrue(typeof(connection.Disconnect) == "function",
+      "getconnections.Disconnect did not return a function (Wait)")
+    Assert.istrue(typeof(connection.Enabled) == "boolean", "getconnections.Enabled did not return a boolean (Wait)")
+    Assert.istrue(typeof(connection.ForeignState) == "boolean",
+      "getconnections.ForeignState did not return a boolean (Wait)")
+    Assert.istrue(typeof(connection.LuaConnection) == "boolean",
+      "getconnections.LuaConnection did not return a boolean (Wait)")
+    Assert.istrue(typeof(connection.Function) == "nil", "getconnections.Function should not exist on a WaitConnection")
+    Assert.istrue(typeof(connection.Thread) == "thread", "getconnections.Thread did not return a thread (Wait)")
+    Assert.istrue(connection.LuaConnection, "getconnections failed to identify a LuaConnection (Wait)")
+    Assert.isfalse(connection.ForeignState, "getconnections failed to identify a ForeignState (Wait)")
+    Assert.istrue(connection.Enabled, "getconnections failed to identify an enabled connection (Wait)")
+    Assert.isfalse(connection.ForeignState == connection.LuaConnection,
+      "A RBXScriptSignal cannot be a ForeignConnection and a LuaConnection (Wait)")
+    Assert.isfalse(connection.Thread == thread2, "getconnections.Thread did not return the correct thread (Wait, [1])")
+    Assert.isfalse(connection.Thread == coroutine.running(),
+      "getconnections.Thread did not return the correct thread (Wait, [2])")
+    Assert.istrue(connection.Thread == thread3, "getconnections.Thread did not return the correct thread (Wait, [3])")
+    Assert.isfalse(connection2.Thread == thread2, "getconnections.Thread did not return the correct thread (Wait, [2])")
+    Assert.isfalse(connection2.Thread == coroutine.running(),
+      "getconnections.Thread did not return the correct thread (Wait, [3])")
+    Assert.istrue(connection2.Thread == thread4, "getconnections.Thread did not return the correct thread (Wait, [4])")
+    Assert.isfalse(connection3.Thread == thread2, "getconnections.Thread did not return the correct thread (Wait, [3])")
+    Assert.isfalse(connection3.Thread == coroutine.running(),
+      "getconnections.Thread did not return the correct thread (Wait, [4])")
+    Assert.istrue(connection3.Thread == thread5, "getconnections.Thread did not return the correct thread (Wait, [5])")
+
+    if getgenv().DebugPrint then
+      print("WaitConnection firing")
+    end
+    connection:Fire()
+    task.wait()
+    Assert.istrue(k, "getconnections.Thread could not be resumed (Wait)")
+    Assert.istrue(connection.Enabled, "getconnections failed to identify an enabled connection (Wait)")
+    connection2:Defer()
+    if getgenv().DebugPrint then
+      print("WaitConnection deferring")
+    end
+    task.defer(function()
+      Assert.istrue(l, "getconnections.Thread could not be resumed (Wait, [1])")
+      Assert.istrue(connection2.Enabled, "getconnections failed to identify an enabled connection (Wait, [1])")
+    end)
+    local result = pcall(coroutine.resume, connection3.Thread)
+    task.wait()
+    Assert.istrue(result, "getconnections.Thread could not be resumed (Wait, [2])")
+    Assert.istrue(m, "getconnections.Thread could not be resumed (Wait, [3])")
+    Assert.istrue(connection3.Enabled, "getconnections failed to identify an enabled connection (Wait, [2])")
+
+    if getgenv().DebugPrint then
+      print("WaitConnection passed")
+    end
+
+    local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+    local partg = Instance.new("Part", workspace)
+    local g;
+    local thread = task.spawn(function()
+      g = partg.Touched:Connect(function(arg)
+        if arg then
+          Assert.istrue(arg == hrp, "arguments were incorrectly passed")
+        end
+        n += 1;
+        return arg
+      end)
+    end)
+  
+    local connection = getconnections(partg.Touched)[1];
+    Assert.istrue(typeof(connection.Fire) == "function", "getconnections.Fire did not return a function (Touched)")
+    Assert.istrue(typeof(connection.Defer) == "function", "getconnections.Defer did not return a function (Touched)")
+    Assert.istrue(typeof(connection.Disable) == "function", "getconnections.Disable did not return a function (Touched)")
+    Assert.istrue(typeof(connection.Enable) == "function", "getconnections.Enable did not return a function (Touched)")
+    Assert.istrue(typeof(connection.Disconnect) == "function",
+      "getconnections.Disconnect did not return a function (Touched)")
+    Assert.istrue(typeof(connection.Enabled) == "boolean", "getconnections.Enabled did not return a boolean (Touched)")
+    Assert.istrue(typeof(connection.ForeignState) == "boolean",
+      "getconnections.ForeignState did not return a boolean (Touched)")
+    Assert.istrue(typeof(connection.LuaConnection) == "boolean",
+      "getconnections.LuaConnection did not return a boolean (Touched)")
+    Assert.istrue(typeof(connection.Function) == "function", "getconnections.Function did not return a function (Touched)")
+    Assert.istrue(typeof(connection.Thread) == "thread", "getconnections.Thread did not return a thread (Touched)")
+    Assert.istrue(connection.LuaConnection, "getconnections failed to identify a LuaConnection (Touched)")
+    Assert.isfalse(connection.ForeignState, "getconnections failed to identify a ForeignState (Touched)")
+    Assert.istrue(connection.Enabled, "getconnections failed to identify an enabled connection (Touched, [1])")
+    Assert.isfalse(connection.ForeignState == connection.LuaConnection, "A RBXScriptSignal cannot be a ForeignConnection and a LuaConnection (Touched)")
+    Assert.istrue(connection.Function() == nil, "getconnections.Function did not return a consistent value (Touched)")
+    Assert.istrue(n == 1, "getconnections.Function was not called")
+    Assert.istrue(connection.Function() == connection.Function(), "getconnections.Function did not return a consistent value (Touched, [1])")
+    Assert.istrue(n == 3, "getconnections.Function was not called [1]")
+    Assert.istrue(connection.Thread == thread, "getconnections.Thread did not return the correct thread (Touched)")
+    for i=0, 63 do
+      getconnections(partg.Touched)[1]:Fire(hrp)
+    end
+    Assert.istrue(n == 67, "failed to fire a Touched signal")
+    g:Disconnect()
+    Assert.istrue(getconnections(partg.Touched)[1] == nil, "Disconnect did not work properly (Touched)")
+    local connection2 = partg.Touched:Connect(function()
+    end)
+    getconnections(partg.Touched)[1]:Disconnect()
+    Assert.istrue(connection2.Connected == false, "Disconnect did not work properly (Touched, [1])")
+    Assert.istrue(getconnections(partg.Touched)[1] == nil, "Disconnect did not work properly (Touched, [2])")
+    local connection3 = partg.Touched:Connect(function()
+    end)
+    getconnections(partg.Touched)[1]:Disconnect()
+    Assert.istrue(connection3.Connected == false, "Disconnect did not work properly (Touched, [3])")
+    Assert.istrue(getconnections(partg.Touched)[1] == nil, "Disconnect did not work properly (Touched, [4])")
+
+    if getgenv().DebugPrint then
+      print("TouchedConnection passed")
+    end
+
+    folder:Destroy()
+    parta:Destroy()
+    partb:Destroy()
+    partc:Destroy()
+    partd:Destroy()
+    parte:Destroy()
+    partf:Destroy()
+    partg:Destroy()
+    return true
+  end)
+end)
+
+runner:run()
+
+
+-- -- verify if exp is working
+-- print(getinstructions(function() end)[1])
+-- local suc, msg = pcall(cache.invalidate)
+-- if suc == true then
+--     error("?? how")
+-- end
+-- if msg ~= "missing argument #1 to 'invalidate' (userdata expected)" then
+--     error("debugname enc wrong")
+-- end
+-- local old = getfflag("PhysicsSenderMaxBandwidthBps");
+-- print(old)
+-- setfflag("PhysicsSenderMaxBandwidthBps", old + 1);
+-- print(getfflag("PhysicsSenderMaxBandwidthBps"))
+-- setfflag("PhysicsSenderMaxBandwidthBps", old);
+-- if #getactors() > 0 then
+--     warn("actors")
+--     table.foreach(getactors(), print)
+--     table.foreach(getactorthreads(), print)
+--     run_on_actor(getactors()[1], [[ print("hello from actor") ]])
+--     run_on_thread(getactorthreads()[1], [[ print("hello from actor") ]])
+--     if not table.find(getactorthreads(), getactorthread(getactors()[1])) then
+--         error("getactorthread failed")
+--     end
+-- end
+-- warn("replsig")
+-- replicatesignal(game.Players.LocalPlayer.Kill)
+-- task.wait()
+-- assert(game.Players.LocalPlayer.Character.Humanoid.Health == 100, "btc")
+-- warn("done")
+
+-- local c = getscriptclosure(game:GetService("Players").LocalPlayer.PlayerScripts.RbxCharacterSounds)
+-- local b = debug.getproto(c, 1, true)
+-- local bc = debug.getproto(c, 1, false)
+-- local bbc = debug.getproto(c, 1)
+-- local protowow = debug.getproto(filtergc("function", { Name = "forgives_flushed" }, true), 1)
+-- if pcall(debug.getproto, function() end, -0, true) then
+--   warn("?? Yo twin what [1]")
+-- end
+
+-- if pcall(debug.getproto, function() end, 0xFFFFFFFFFFFFFF, true) then
+--   warn("??? Yo twin what [2]")
+-- end
+
+-- warn("1")
+-- bc()
+-- task.wait(1)
+-- warn("2")
+-- bbc()
+-- task.wait(1)
+-- warn("3")
+-- b[1]()
+-- task.wait(1)
+
+end
+a()
