@@ -255,7 +255,7 @@ do
 	local httpRequest = request or http_request or (syn and syn.request);
 	
 	local runcode = runcode and clonefunction(runcode) or function(scr)
-		loadstring(scr)();
+		pcall(function() loadstring(scr)() end);
 	end
 	
 	--[[ Module ]]--
