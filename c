@@ -17,7 +17,7 @@ local EDITOR_FONT = Enum.Font.Code
 local EDITOR_TEXT_SIZE = 16
 local INDENT = "    "
 
-local CHUNK_LINE_COUNT = 120
+local CHUNK_LINE_COUNT = 48
 local VISIBLE_LINE_BUFFER = 30
 local HIGHLIGHT_DEBOUNCE = 0.04
 
@@ -136,7 +136,9 @@ end
 
 local function createButton(parent, text, width, backgroundColor)
     local button = Instance.new("TextButton")
-    button.Name = text:gsub("%s+", ""):gsub("[^%w]", "") .. "Button"
+    local buttonName = text:gsub("%s+", "")
+    buttonName = buttonName:gsub("[^%w]", "")
+    button.Name = buttonName .. "Button"
     button.Size = UDim2.fromOffset(width, 30)
     button.BackgroundColor3 = backgroundColor or Color3.fromRGB(45, 47, 56)
     button.BorderSizePixel = 0
@@ -318,10 +320,6 @@ end)
 pcall(function()
     codeEditor.LineHeight = LINE_HEIGHT / EDITOR_TEXT_SIZE
 end)
-
-local syntaxLayer = Instance.new("Folder")
-syntaxLayer.Name = "SyntaxLayer"
-syntaxLayer.Parent = editorScroll
 
 local customCaret = Instance.new("Frame")
 customCaret.Name = "CustomCaret"
@@ -550,10 +548,11 @@ local function keepWindowVisible()
 end
 
 local function escapeRichText(text)
-    return text
-        :gsub("&", "&amp;")
-        :gsub("<", "&lt;")
-        :gsub(">", "&gt;")
+
+    local escaped = text:gsub("&", "&amp;")
+    escaped = escaped:gsub("<", "&lt;")
+    escaped = escaped:gsub(">", "&gt;")
+    return escaped
 end
 
 local function colorToken(text, color)
@@ -588,6 +587,10 @@ local function highlightLuau(source)
     local index = 1
     local sourceLength = #source
 
+    local function emit(value)
+        result[#result + 1] = value
+    end
+
     while index <= sourceLength do
         local character = source:sub(index, index)
         local nextTwo = source:sub(index, index + 1)
@@ -595,8 +598,7 @@ local function highlightLuau(source)
 
         if nextFour == "--[[" then
             local finish = findLongStringEnd(source, index + 2)
-            table.insert(
-                result,
+            emit(
                 colorToken(
                     source:sub(index, finish),
                     HIGHLIGHT_COLORS.Comment
@@ -608,8 +610,7 @@ local function highlightLuau(source)
             local newline = source:find("\n", index, true)
             local finish = newline and newline - 1 or sourceLength
 
-            table.insert(
-                result,
+            emit(
                 colorToken(
                     source:sub(index, finish),
                     HIGHLIGHT_COLORS.Comment
@@ -621,8 +622,7 @@ local function highlightLuau(source)
         elseif character == '"' or character == "'" then
             local finish = findQuotedStringEnd(source, index, character)
 
-            table.insert(
-                result,
+            emit(
                 colorToken(
                     source:sub(index, finish),
                     HIGHLIGHT_COLORS.String
@@ -634,8 +634,7 @@ local function highlightLuau(source)
         elseif nextTwo == "[[" then
             local finish = findLongStringEnd(source, index)
 
-            table.insert(
-                result,
+            emit(
                 colorToken(
                     source:sub(index, finish),
                     HIGHLIGHT_COLORS.String
@@ -667,8 +666,7 @@ local function highlightLuau(source)
                 color = HIGHLIGHT_COLORS.Builtin
             end
 
-            table.insert(
-                result,
+            emit(
                 color
                     and colorToken(token, color)
                     or escapeRichText(token)
@@ -684,8 +682,7 @@ local function highlightLuau(source)
                 finish += 1
             end
 
-            table.insert(
-                result,
+            emit(
                 colorToken(
                     source:sub(index, finish - 1),
                     HIGHLIGHT_COLORS.Number
@@ -695,7 +692,7 @@ local function highlightLuau(source)
             index = finish
 
         else
-            table.insert(result, escapeRichText(character))
+            emit(escapeRichText(character))
             index += 1
         end
     end
@@ -704,15 +701,17 @@ local function highlightLuau(source)
 end
 
 local function normalizeAsciiQuotes(text)
-    return text
-        :gsub("“", '"')
-        :gsub("”", '"')
-        :gsub("„", '"')
-        :gsub("‟", '"')
-        :gsub("‘", "'")
-        :gsub("’", "'")
-        :gsub("‚", "'")
-        :gsub("‛", "'")
+
+    local normalized = text
+    normalized = normalized:gsub("“", '"')
+    normalized = normalized:gsub("”", '"')
+    normalized = normalized:gsub("„", '"')
+    normalized = normalized:gsub("‟", '"')
+    normalized = normalized:gsub("‘", "'")
+    normalized = normalized:gsub("’", "'")
+    normalized = normalized:gsub("‚", "'")
+    normalized = normalized:gsub("‛", "'")
+    return normalized
 end
 
 local documentText = nil
@@ -726,7 +725,6 @@ local syntaxChunks = {}
 local gutterChunks = {}
 local chunkCache = {}
 
-local renderGeneration = 0
 local scheduledRenderGeneration = 0
 
 local function destroyChunkLabels()
@@ -755,7 +753,7 @@ local function rebuildDocumentCache(text)
     local textLength = #text
 
     while true do
-        table.insert(documentLineStarts, position)
+        documentLineStarts[#documentLineStarts + 1] = position
 
         local newline = text:find("\n", position, true)
         local line
@@ -766,7 +764,7 @@ local function rebuildDocumentCache(text)
             line = text:sub(position)
         end
 
-        table.insert(documentLines, line)
+        documentLines[#documentLines + 1] = line
 
         if #line > #longestLine then
             longestLine = line
@@ -791,9 +789,10 @@ local function rebuildDocumentCache(text)
     if longestLine == "" then
         measuredLongestWidth = 0
     else
+        local measuredLine = longestLine:gsub("\t", INDENT)
         local success, measured = pcall(function()
             return TextService:GetTextSize(
-                longestLine,
+                measuredLine,
                 EDITOR_TEXT_SIZE,
                 EDITOR_FONT,
                 Vector2.new(1000000, LINE_HEIGHT)
@@ -809,7 +808,6 @@ local function rebuildDocumentCache(text)
     end
 
     destroyChunkLabels()
-    renderGeneration += 1
 end
 
 local function createSyntaxChunk()
@@ -833,7 +831,8 @@ local function createSyntaxChunk()
         label.MaxVisibleGraphemes = -1
     end)
 
-    label.Parent = syntaxLayer
+    label.Name = "SyntaxChunk"
+    label.Parent = editorScroll
     return label
 end
 
@@ -885,9 +884,20 @@ local function getChunkData(chunkStart)
         numberList[lineNumber - chunkStart + 1] = tostring(lineNumber)
     end
 
+    local highlightSucceeded, highlightResult = pcall(highlightLuau, source)
+    local highlighted
+
+    if highlightSucceeded then
+        highlighted = highlightResult
+    else
+        highlighted = escapeRichText(source)
+        statusText.Text = "Syntax highlight fallback active"
+        warn("[MiniLuaIDE] syntax highlight error: " .. tostring(highlightResult))
+    end
+
     cached = {
         endLine = chunkEnd,
-        highlighted = highlightLuau(source),
+        highlighted = highlighted,
         lineNumbers = table.concat(numberList, "\n"),
     }
 
@@ -911,8 +921,28 @@ local function getEditorDocumentSize()
     return Vector2.new(width, height)
 end
 
+local renderFallbackActive = false
+local lastRenderFailure = nil
+
+local function activatePlainTextFallback(reason)
+    if renderFallbackActive then
+        return
+    end
+
+    renderFallbackActive = true
+    lastRenderFailure = tostring(reason)
+
+    destroyChunkLabels()
+    codeEditor.TextTransparency = 0
+    codeEditor.TextStrokeTransparency = 1
+    customCaret.Visible = false
+    statusText.Text = "Plain-text renderer fallback active"
+
+    warn("[MiniLuaIDE] renderer fallback: " .. lastRenderFailure)
+end
+
 local function renderVisibleChunks()
-    if not screenGui.Parent or isMinimized then
+    if renderFallbackActive or not screenGui.Parent or isMinimized then
         return
     end
 
@@ -1018,8 +1048,12 @@ local function scheduleVisibleRender()
             return
         end
 
-        if screenGui.Parent then
-            renderVisibleChunks()
+        if screenGui.Parent and not renderFallbackActive then
+            local renderSucceeded, renderError = pcall(renderVisibleChunks)
+
+            if not renderSucceeded then
+                activatePlainTextFallback(renderError)
+            end
         end
     end)
 end
@@ -1056,7 +1090,8 @@ local caretBlinkStarted = os.clock()
 local function resetCaretBlink()
     caretBlinkStarted = os.clock()
 
-    if codeEditor:IsFocused()
+    if not renderFallbackActive
+        and codeEditor:IsFocused()
         and codeEditor.CursorPosition ~= -1 then
         customCaret.Visible = true
     end
@@ -1066,7 +1101,8 @@ task.spawn(function()
     while screenGui.Parent do
         task.wait(0.08)
 
-        if codeEditor:IsFocused()
+        if not renderFallbackActive
+            and codeEditor:IsFocused()
             and codeEditor.CursorPosition ~= -1 then
 
             local elapsed = os.clock() - caretBlinkStarted
@@ -1179,6 +1215,8 @@ local function updateCursor()
     )
 
     beforeCaret = beforeCaret:gsub("\n", "")
+    beforeCaret = beforeCaret:gsub("\r", "")
+    beforeCaret = beforeCaret:gsub("\t", INDENT)
 
     local caretOffsetX = 0
 
@@ -1203,12 +1241,16 @@ local function updateCursor()
     local caretX = 10 + caretOffsetX
     local caretY = 7 + (lineNumber - 1) * LINE_HEIGHT
 
-    customCaret.Position = UDim2.fromOffset(
-        caretX,
-        caretY
-    )
+    if not renderFallbackActive then
+        customCaret.Position = UDim2.fromOffset(
+            caretX,
+            caretY
+        )
 
-    resetCaretBlink()
+        resetCaretBlink()
+    else
+        customCaret.Visible = false
+    end
 
     keepCaretVisible(
         caretX,
@@ -1396,7 +1438,7 @@ local function clearOutput()
     outputCount = 0
 end
 
-local function executeCode(source, sourceName)
+local function executeCode(source)
     local compiled, compileError = loadstring(source)
 
     if not compiled then
@@ -1998,7 +2040,11 @@ local function refreshEditor()
     end
 
     local text = codeEditor.Text or ""
-    local normalizedText = normalizeAsciiQuotes(text)
+    local normalizedText = text
+
+    if text:find("\226\128", 1, true) then
+        normalizedText = normalizeAsciiQuotes(text)
+    end
 
     if normalizedText ~= text then
         normalizingQuotes = true
@@ -2058,10 +2104,7 @@ mainWindow:GetPropertyChangedSignal(
 ):Connect(updateLayout)
 
 executeButton.Activated:Connect(function()
-    executeCode(
-        codeEditor.Text,
-        "Editor code"
-    )
+    executeCode(codeEditor.Text)
 end)
 
 clearEditorButton.Activated:Connect(function()
@@ -2106,9 +2149,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
 
-    if gameProcessed then
-        return
-    end
+    local editorFocused = codeEditor:IsFocused()
 
     local controlDown =
         UserInputService:IsKeyDown(
@@ -2129,27 +2170,31 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     local modifierDown =
         controlDown or commandDown
 
-    if modifierDown
+    if (not gameProcessed or editorFocused)
+        and modifierDown
         and input.KeyCode == Enum.KeyCode.Return then
 
-        executeCode(
-            codeEditor.Text,
-            "Editor code"
-        )
+        executeCode(codeEditor.Text)
         return
     end
 
-    if modifierDown
+    if (not gameProcessed or editorFocused)
+        and modifierDown
         and input.KeyCode == Enum.KeyCode.L then
 
         clearOutput()
         return
     end
 
-    if codeEditor:IsFocused()
+    if editorFocused
         and input.KeyCode == Enum.KeyCode.Tab then
 
         insertIndent()
+        return
+    end
+
+    if gameProcessed then
+        return
     end
 end)
 
