@@ -1,1 +1,2174 @@
-game.Loaded:Wait()local a=game:GetService("Players")local b=game:GetService("UserInputService")local c=game:GetService("TextService")local a=a.LocalPlayer:WaitForChild("PlayerGui")local d="temporary ui";local e=Vector2.new(780,540)local f=Vector2.new(280,320)local g=Vector2.new(1200,850)local h=56;local i=21;local j=Enum.Font.Code;local k=16;local l="    ";local m=120;local n=30;local o=0.04;local p={Background=Color3.fromRGB(20,21,26),TopBar=Color3.fromRGB(29,30,37),Toolbar=Color3.fromRGB(24,25,31),Panel=Color3.fromRGB(16,17,21),Editor=Color3.fromRGB(13,14,18),Gutter=Color3.fromRGB(21,22,27),Text=Color3.fromRGB(225,228,235),SubText=Color3.fromRGB(140,145,158),Border=Color3.fromRGB(55,58,68),Accent=Color3.fromRGB(75,150,255),Run=Color3.fromRGB(55,170,100),Warning=Color3.fromRGB(240,175,65),Error=Color3.fromRGB(235,80,85),Success=Color3.fromRGB(95,215,135)}local q={Keyword="#C586C0",String="#CE9178",Number="#B5CEA8",Comment="#6A9955",Builtin="#4FC1FF",Boolean="#569CD6"}local r={["and"]=true,["break"]=true,["continue"]=true,["do"]=true,["else"]=true,["elseif"]=true,["end"]=true,["export"]=true,["for"]=true,["function"]=true,["if"]=true,["in"]=true,["local"]=true,["not"]=true,["or"]=true,["repeat"]=true,["return"]=true,["then"]=true,["type"]=true,["until"]=true,["while"]=true}local s={assert=true,collectgarbage=true,error=true,getfenv=true,getmetatable=true,ipairs=true,loadstring=true,next=true,pairs=true,pcall=true,print=true,rawequal=true,rawget=true,rawset=true,select=true,setfenv=true,setmetatable=true,tostring=true,type=true,tonumber=true,unpack=true,xpcall=true,coroutine=true,string=true,table=true,math=true,os=true,task=true,game=true,workspace=true,script=true,Enum=true,Instance=true,Vector2=true,Vector3=true,UDim=true,UDim2=true,Color3=true,CFrame=true}local t=a:FindFirstChild("MiniLuaIDE")if t then t:Destroy()end;local function t(a,b)local c=Instance.new("UICorner")c.CornerRadius=UDim.new(0,b or 6)c.Parent=a;return c end;local function u(a,b,c)local d=Instance.new("UIStroke")d.Color=b or p.Border;d.Thickness=c or 1;d.ApplyStrokeMode=Enum.ApplyStrokeMode.Border;d.Parent=a;return d end;local function v(a,b,c,d)local e=Instance.new("TextButton")e.Name=b:gsub("%s+",""):gsub("[^%w]","").."Button";e.Size=UDim2.fromOffset(c,30)e.BackgroundColor3=d or Color3.fromRGB(45,47,56)e.BorderSizePixel=0;e.AutoButtonColor=true;e.Text=b;e.TextColor3=p.Text;e.TextSize=14;e.Font=Enum.Font.GothamMedium;e.Parent=a;t(e,5)return e end;local w=Instance.new("ScreenGui")w.Name="MiniLuaIDE";w.ResetOnSpawn=false;w.IgnoreGuiInset=false;w.ZIndexBehavior=Enum.ZIndexBehavior.Sibling;pcall(function()w.ScreenInsets=Enum.ScreenInsets.CoreUISafeInsets end)pcall(function()w.SafeAreaCompatibility=Enum.SafeAreaCompatibility.None end)w.Parent=a;local a=Instance.new("Frame")a.Name="MainWindow";a.Size=UDim2.fromOffset(e.X,e.Y)a.Position=UDim2.fromOffset(0,0)a.BackgroundColor3=p.Background;a.BorderSizePixel=0;a.ClipsDescendants=true;a.Active=true;a.Parent=w;local x=t(a,9)u(a,p.Border,1)local y=Instance.new("Frame")y.Name="TopBar";y.Size=UDim2.new(1,0,0,38)y.BackgroundColor3=p.TopBar;y.BorderSizePixel=0;y.Active=true;y.Parent=a;local z=t(y,9)local A=Instance.new("Frame")A.Name="DragHandle";A.Size=UDim2.new(1,-48,1,0)A.BackgroundTransparency=1;A.BorderSizePixel=0;A.Active=true;A.ZIndex=2;A.Parent=y;local B=Instance.new("TextLabel")B.Name="Title";B.Size=UDim2.new(1,-13,1,0)B.Position=UDim2.fromOffset(13,0)B.BackgroundTransparency=1;B.Active=false;B.ZIndex=3;B.Text=d;B.TextColor3=p.Text;B.TextSize=15;B.Font=Enum.Font.GothamBold;B.TextXAlignment=Enum.TextXAlignment.Left;B.Parent=A;local d=Instance.new("TextButton")d.Name="MinimizeButton";d.Size=UDim2.fromOffset(48,38)d.Position=UDim2.new(1,-48,0,0)d.BackgroundTransparency=1;d.Text="-";d.TextColor3=p.SubText;d.TextSize=21;d.Font=Enum.Font.GothamBold;d.AutoButtonColor=false;d.Active=true;d.ZIndex=4;d.Parent=y;local C=Instance.new("Frame")C.Name="Toolbar";C.Position=UDim2.fromOffset(0,38)C.Size=UDim2.new(1,0,0,42)C.BackgroundColor3=p.Toolbar;C.BorderSizePixel=0;C.Parent=a;local D=Instance.new("UIPadding")D.PaddingLeft=UDim.new(0,8)D.PaddingRight=UDim.new(0,8)D.PaddingTop=UDim.new(0,6)D.Parent=C;local D=Instance.new("UIListLayout")D.FillDirection=Enum.FillDirection.Horizontal;D.HorizontalAlignment=Enum.HorizontalAlignment.Left;D.VerticalAlignment=Enum.VerticalAlignment.Top;D.Padding=UDim.new(0,6)D.Parent=C;local D=v(C,"▶ Execute",96,p.Run)local E=v(C,"Clear Editor",100)local v=v(C,"Clear Output",104)local F=Instance.new("Frame")F.Name="EditorPanel";F.BackgroundColor3=p.Panel;F.BorderSizePixel=0;F.ClipsDescendants=true;F.Parent=a;t(F,6)u(F,p.Border,1)local G=Instance.new("Frame")G.Name="LineNumberGutter";G.Size=UDim2.new(0,52,1,0)G.BackgroundColor3=p.Gutter;G.BorderSizePixel=0;G.ClipsDescendants=true;G.Parent=F;local H=Instance.new("Frame")H.Size=UDim2.new(0,1,1,0)H.Position=UDim2.new(1,-1,0,0)H.BackgroundColor3=p.Border;H.BorderSizePixel=0;H.Parent=G;local H=Instance.new("ScrollingFrame")H.Name="EditorScroll";H.Position=UDim2.fromOffset(52,0)H.Size=UDim2.new(1,-52,1,0)H.BackgroundColor3=p.Editor;H.BorderSizePixel=0;H.ClipsDescendants=true;H.ScrollBarThickness=7;H.ScrollBarImageColor3=Color3.fromRGB(80,83,95)H.CanvasSize=UDim2.fromOffset(0,0)H.ScrollingDirection=Enum.ScrollingDirection.XY;H.Parent=F;t(H,6)local I=Instance.new("TextBox")I.Name="CodeEditor";I.Position=UDim2.fromOffset(10,7)I.Size=UDim2.new(1,-22,0,300)I.BackgroundTransparency=1;I.BorderSizePixel=0;I.ClearTextOnFocus=false;I.MultiLine=true;I.TextEditable=true;I.TextWrapped=false;I.TextColor3=p.Text;I.PlaceholderColor3=Color3.fromRGB(90,94,105)I.PlaceholderText="-- opiumware ios temp yay";I.TextSize=k;I.Font=j;I.TextXAlignment=Enum.TextXAlignment.Left;I.TextYAlignment=Enum.TextYAlignment.Top;I.Text=[[print("Hello from the editor!")]];I.TextTransparency=1;I.TextStrokeTransparency=1;I.ZIndex=5;I.Parent=H;pcall(function()I.MaxVisibleGraphemes=-1 end)pcall(function()I.LineHeight=i/k end)local J=Instance.new("Folder")J.Name="SyntaxLayer";J.Parent=H;local K=Instance.new("Frame")K.Name="CustomCaret";K.Size=UDim2.fromOffset(2,k+2)K.BackgroundColor3=p.Text;K.BorderSizePixel=0;K.Visible=false;K.Active=false;K.ZIndex=10;K.Parent=H;local L=Instance.new("Frame")L.Name="OutputPanel";L.BackgroundColor3=p.Panel;L.BorderSizePixel=0;L.ClipsDescendants=true;L.Parent=a;t(L,6)u(L,p.Border,1)local u=Instance.new("Frame")u.Name="OutputHeader";u.Size=UDim2.new(1,0,0,28)u.BackgroundColor3=p.Gutter;u.BorderSizePixel=0;u.Parent=L;local M=Instance.new("TextLabel")M.Size=UDim2.new(1,-20,1,0)M.Position=UDim2.fromOffset(10,0)M.BackgroundTransparency=1;M.Text="OUTPUT";M.TextColor3=p.SubText;M.TextSize=12;M.Font=Enum.Font.GothamBold;M.TextXAlignment=Enum.TextXAlignment.Left;M.Parent=u;t(u,6)local u=Instance.new("ScrollingFrame")u.Name="OutputScroll";u.Position=UDim2.fromOffset(0,28)u.Size=UDim2.new(1,0,1,-28)u.BackgroundColor3=p.Editor;u.BorderSizePixel=0;u.ScrollBarThickness=6;u.ScrollBarImageColor3=Color3.fromRGB(80,83,95)u.AutomaticCanvasSize=Enum.AutomaticSize.Y;u.CanvasSize=UDim2.fromOffset(0,0)u.Parent=L;t(u,6)local M=Instance.new("UIPadding")M.PaddingLeft=UDim.new(0,9)M.PaddingRight=UDim.new(0,9)M.PaddingTop=UDim.new(0,7)M.PaddingBottom=UDim.new(0,7)M.Parent=u;local M=Instance.new("UIListLayout")M.SortOrder=Enum.SortOrder.LayoutOrder;M.Padding=UDim.new(0,3)M.Parent=u;local N=Instance.new("Frame")N.Name="StatusBar";N.BackgroundColor3=p.TopBar;N.BorderSizePixel=0;N.Parent=a;t(N,9)local t=Instance.new("TextLabel")t.Name="StatusText";t.Size=UDim2.new(0.7,-10,1,0)t.Position=UDim2.fromOffset(10,0)t.BackgroundTransparency=1;t.Text="";t.TextColor3=p.SubText;t.TextSize=12;t.Font=Enum.Font.Gotham;t.TextXAlignment=Enum.TextXAlignment.Left;t.TextTruncate=Enum.TextTruncate.AtEnd;t.Parent=N;local t=Instance.new("TextLabel")t.Name="CursorText";t.Size=UDim2.new(0.3,-10,1,0)t.Position=UDim2.new(0.7,0,0,0)t.BackgroundTransparency=1;t.Text="Ln 1, Col 1";t.TextColor3=p.SubText;t.TextSize=12;t.Font=Enum.Font.Gotham;t.TextXAlignment=Enum.TextXAlignment.Right;t.Parent=N;local O=Instance.new("TextButton")O.Name="ResizeHandle";O.Size=UDim2.fromOffset(28,28)O.Position=UDim2.new(1,-28,1,-28)O.BackgroundTransparency=1;O.Text="◢";O.TextColor3=p.SubText;O.TextSize=14;O.Font=Enum.Font.Code;O.ZIndex=20;O.Active=true;O.Parent=a;local P=false;local Q=true;local R=e;local S=nil;local T=0;local U=nil;local V=nil;local function W()local a=w.AbsoluteSize;if a.X>1 and a.Y>1 then return a end;local a=workspace.CurrentCamera;if a then return a.ViewportSize end;return Vector2.new(1920,1080)end;local function X()if b.TouchEnabled then return 12 end;return 24 end;local function Y()local a=W()local b=X()return Vector2.new(math.max(1,a.X-b*2),math.max(1,a.Y-b*2))end;local function Z(a,b,c,d)local b=math.min(a,b,d)if a>=c then return math.max(c,b)end;return a end;local function ab()local a=Y()return Vector2.new(Z(a.X,e.X,f.X,g.X),Z(a.Y,e.Y,f.Y,g.Y))end;local function e()return Vector2.new(a.Size.X.Offset,a.Size.Y.Offset)end;local function Z()return Vector2.new(a.Position.X.Offset,a.Position.Y.Offset)end;local function bb(a,b)local c=W()local d=X()local b=b or e()local b=Vector2.new(math.max(d,c.X-b.X-d),math.max(d,c.Y-b.Y-d))return Vector2.new(math.clamp(a.X,d,b.X),math.clamp(a.Y,d,b.Y))end;local function X(b)local c=W()local b=b or e()local b=Vector2.new((c.X-b.X)*0.5,(c.Y-b.Y)*0.5)a.Position=UDim2.fromOffset(math.floor(b.X),math.floor(b.Y))end;local function cb()local b=bb(Z())a.Position=UDim2.fromOffset(b.X,b.Y)end;local function db(a)return a:gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;")end;local function eb(a,b)return'<font color="'..b..'">'..db(a).."</font>"end;local function fb(a,b,c)local b=b+1;while b<=#a do local a=a:sub(b,b)if a=="\\"then b+=2 elseif a==c then return b else b+=1 end end;return#a end;local function gb(a,b)local b=a:find("]]",b+2,true)return b and b+1 or#a end;local function hb(a)local b=table.create(math.max(8,#a//4))local c=1;local d=#a;while c<=d do local e=a:sub(c,c)local f=a:sub(c,c+1)local g=a:sub(c,c+3)if g=="--[["then local d=gb(a,c+2)table.insert(b,eb(a:sub(c,d),q.Comment))c=d+1 elseif f=="--"then local e=a:find("\n",c,true)local d=e and e-1 or d;table.insert(b,eb(a:sub(c,d),q.Comment))c=d+1 elseif e=='"'or e=="'"then local d=fb(a,c,e)table.insert(b,eb(a:sub(c,d),q.String))c=d+1 elseif f=="[["then local d=gb(a,c)table.insert(b,eb(a:sub(c,d),q.String))c=d+1 elseif e:match("[%a_]")then local e=c+1;while e<=d and a:sub(e,e):match("[%w_]")do e+=1 end;local a=a:sub(c,e-1)local d;if a=="true"or a=="false"or a=="nil"then d=q.Boolean elseif r[a]then d=q.Keyword elseif s[a]then d=q.Builtin end;table.insert(b,d and eb(a,d)or db(a))c=e elseif e:match("%d")then local e=c+1;while e<=d and a:sub(e,e):match("[%w_%.]")do e+=1 end;table.insert(b,eb(a:sub(c,e-1),q.Number))c=e else table.insert(b,db(e))c+=1 end end;return table.concat(b)end;local function q(a)return a:gsub("“",'"'):gsub("”",'"'):gsub("„",'"'):gsub("‟",'"'):gsub("‘","'"):gsub("’","'"):gsub("‚","'"):gsub("‛","'")end;local r=nil;local s={""}local db={1}local eb="";local fb=0;local gb={}local ib={}local jb={}local kb=0;local lb=0;local function mb()for a,a in pairs(gb)do a:Destroy()end;for a,a in pairs(ib)do a:Destroy()end;table.clear(gb)table.clear(ib)end;local function nb(a)r=a;table.clear(s)table.clear(db)table.clear(jb)eb="";local b=1;local d=#a;while true do table.insert(db,b)local c=a:find("\n",b,true)local e;if c then e=a:sub(b,c-1)else e=a:sub(b)end;table.insert(s,e)if#e>#eb then eb=e end;if not c then break end;b=c+1;if b>d+1 then break end end;if#s==0 then s[1]="";db[1]=1 end;if eb==""then fb=0 else local a,b=pcall(function()return c:GetTextSize(eb,k,j,Vector2.new(1000000,i))end)if a then fb=b.X else fb=#eb*k*0.61 end end;mb()kb+=1 end;local function eb()local a=Instance.new("TextLabel")a.BackgroundTransparency=1;a.BorderSizePixel=0;a.RichText=true;a.TextWrapped=false;a.TextColor3=p.Text;a.TextSize=k;a.Font=j;a.TextXAlignment=Enum.TextXAlignment.Left;a.TextYAlignment=Enum.TextYAlignment.Top;a.ZIndex=1;pcall(function()a.LineHeight=i/k end)pcall(function()a.MaxVisibleGraphemes=-1 end)a.Parent=J;return a end;local function J()local a=Instance.new("TextLabel")a.BackgroundTransparency=1;a.BorderSizePixel=0;a.TextWrapped=false;a.RichText=false;a.TextColor3=Color3.fromRGB(100,105,118)a.TextSize=k;a.Font=j;a.TextXAlignment=Enum.TextXAlignment.Right;a.TextYAlignment=Enum.TextYAlignment.Top;pcall(function()a.LineHeight=i/k end)pcall(function()a.MaxVisibleGraphemes=-1 end)a.Parent=G;return a end;local function G(a)local b=jb[a];if b then return b end;local c=math.min(#s,a+m-1)local d=table.concat(s,"\n",a,c)local e=table.create(c-a+1)for b=a,c do e[b-a+1]=tostring(b)end;b={endLine=c,highlighted=hb(d),lineNumbers=table.concat(e,"\n")}jb[a]=b;return b end;local function hb()local a=math.max(1,#s)local a=math.max(F.AbsoluteSize.Y-14,a*i+20)local b=math.max(H.AbsoluteSize.X-25,fb+40)return Vector2.new(b,a)end;local function fb()if not w.Parent or P then return end;local a=math.max(1,#s)local b=H.CanvasPosition.Y;local c=math.max(1,H.AbsoluteWindowSize.Y)local d=math.floor(math.max(0,b-7)/i)+1;local c=math.ceil((b+c)/i)+1;d=math.max(1,d-n)c=math.min(a,c+n)local a=math.floor((d-1)/m)*m+1;local c=math.floor((c-1)/m)*m+1;local d=hb()local e={}for a=a,c,m do e[a]=true;local c=G(a)local e=c.endLine-a+1;local f=7+(a-1)*i;local g=gb[a];if not g then g=eb()gb[a]=g;g.Text=c.highlighted end;g.Position=UDim2.fromOffset(10,f)g.Size=UDim2.fromOffset(d.X,e*i+4)local d=ib[a];if not d then d=J()ib[a]=d;d.Text=c.lineNumbers end;d.Position=UDim2.fromOffset(0,f-b)d.Size=UDim2.new(1,-8,0,e*i+4)end;for a,b in pairs(gb)do if not e[a]then b:Destroy()gb[a]=nil end end;for a,b in pairs(ib)do if not e[a]then b:Destroy()ib[a]=nil end end end;local function m()lb+=1;local a=lb;task.delay(o,function()if a~=lb then return end;if w.Parent then fb()end end)end;local function n()local a=hb()I.Position=UDim2.fromOffset(10,7)I.Size=UDim2.fromOffset(a.X,a.Y)H.CanvasSize=UDim2.fromOffset(a.X+15,a.Y+15)m()end;local function o()local a=I.Text or"";if a~=r then nb(a)end;n()end;local s=os.clock()local function G()s=os.clock()if I:IsFocused()and I.CursorPosition~=-1 then K.Visible=true end end;task.spawn(function()while w.Parent do task.wait(0.08)if I:IsFocused()and I.CursorPosition~=-1 then local a=os.clock()-s;K.Visible=(a%1)<0.5 else K.Visible=false end end end)local function s(a)local b=#db;if b<=1 then return 1 end;local c=1;local b=b;local d=1;while c<=b do local e=math.floor((c+b)/2)if db[e]<=a then d=e;c=e+1 else b=e-1 end end;return d end;local function J(a,b)local c=H.CanvasPosition;local d=H.AbsoluteWindowSize;if d.X<=0 or d.Y<=0 then return end;local e=c.X;local f=c.Y;local g=18;if a<c.X+g then e=math.max(0,a-g)elseif a>c.X+d.X-g then e=math.max(0,a-d.X+g)end;if b<c.Y+g then f=math.max(0,b-g)elseif b+i>c.Y+d.Y-g then f=math.max(0,b-d.Y+i+g)end;if e~=c.X or f~=c.Y then H.CanvasPosition=Vector2.new(e,f)end end;local function eb()local a=I.CursorPosition;if a==-1 then K.Visible=false;return end;if r~=I.Text then nb(I.Text or"")n()end;a=math.clamp(a,1,#I.Text+1)local b=s(a)local d=db[b]or 1;local e=a-d+1;t.Text=string.format("Ln %d, Col %d",b,e)local a=I.Text:sub(d,math.max(d-1,a-1))a=a:gsub("\n","")local d=0;if#a>0 then local b,c=pcall(function()return c:GetTextSize(a,k,j,Vector2.new(1000000,i))end)if b then d=c.X else d=#a*k*0.61 end end;local a=10+d;local b=7+(b-1)*i;K.Position=UDim2.fromOffset(a,b)G()J(a,b)end;local function c()m()end;local function i()local a=math.max(1,a.AbsoluteSize.X-16)local b=6;local a=math.floor((a-b*2)/3)local b=a<92;a=math.max(70,a)D.Size=UDim2.fromOffset(a,30)E.Size=UDim2.fromOffset(a,30)v.Size=UDim2.fromOffset(a,30)local a=b and 11 or 14;D.TextSize=a;E.TextSize=a;v.TextSize=a end;local function k()if P then return end;local b=a.AbsoluteSize.X;local a=a.AbsoluteSize.Y;local c=8;local d=86;local e=24;local f=8;local a=math.max(2,a-d-e-f*2)local g=a<300;local h=g and 90 or 120;local g=g and 72 or 105;local j;local k;if a<h+g then j=math.max(1,math.floor(a*0.3))k=math.max(1,a-j)else local b=math.min(220,a-h)j=math.clamp(math.floor(a*0.3),g,b)k=a-j end;local a=math.max(120,b-c*2)F.Position=UDim2.fromOffset(c,d)F.Size=UDim2.fromOffset(a,k)L.Position=UDim2.fromOffset(c,d+k+f)L.Size=UDim2.fromOffset(a,j)N.Position=UDim2.new(0,0,1,-e)N.Size=UDim2.new(1,0,0,e)O.Position=UDim2.new(1,-28,1,-28)i()n()m()end;local function i()task.defer(function()if not u.Parent then return end;u.CanvasPosition=Vector2.new(0,math.max(0,M.AbsoluteContentSize.Y-u.AbsoluteWindowSize.Y))end)end;local function n(a,b)T+=1;local c=Instance.new("TextLabel")c.Name="Output_"..T;c.Size=UDim2.new(1,-2,0,20)c.AutomaticSize=Enum.AutomaticSize.Y;c.BackgroundTransparency=1;c.TextWrapped=true;c.RichText=false;c.TextSize=14;c.Font=j;c.TextXAlignment=Enum.TextXAlignment.Left;c.TextYAlignment=Enum.TextYAlignment.Top;c.LayoutOrder=T;if b=="warning"then c.Text="[WARNING] "..tostring(a)c.TextColor3=p.Warning elseif b=="error"then c.Text="[ERROR] "..tostring(a)c.TextColor3=p.Error elseif b=="success"then c.Text="[IDE] "..tostring(a)c.TextColor3=p.Success elseif b=="system"then c.Text="[IDE] "..tostring(a)c.TextColor3=p.Accent else c.Text=tostring(a)c.TextColor3=p.Text end;c.Parent=u;i()end;local function i()for a,a in ipairs(u:GetChildren())do if a:IsA("TextLabel")then a:Destroy()end end;T=0 end;local function j(a,b)local a,b=loadstring(a)if not a then n("Failed to compile: "..tostring(b),"error")return end;local a,b=pcall(a)if not a then n("failed to execute: "..tostring(b),"error")else n("code executed successfully","success")end end;local function p()local a=I.CursorPosition;if a==-1 then I.Text..=l;I.CursorPosition=#I.Text+1;return end;local b=I.Text:sub(1,a-1)local c=I.Text:sub(a)I.Text=b..l..c;I.CursorPosition=a+#l end;local function l()local a=Z()local b=e()S=a+b/2 end;local function r(b)if b==P then return end;if b then R=e()l()P=true;if U then U.Enabled=false end;if V then V.Enabled=true end;C.Visible=false;F.Visible=false;L.Visible=false;N.Visible=false;O.Visible=false;B.Visible=false;local b=Vector2.new(h,h)local c=S or(Z()+e()/2)local c=bb(c-b/2,b)a.Size=UDim2.fromOffset(b.X,b.Y)a.Position=UDim2.fromOffset(c.X,c.Y)x.CornerRadius=UDim.new(1,0)z.CornerRadius=UDim.new(1,0)y.Size=UDim2.fromScale(1,1)A.Size=UDim2.fromScale(1,1)d.Position=UDim2.fromOffset(0,0)d.Size=UDim2.fromScale(1,1)d.Text="↗";d.TextSize=24;K.Visible=false else P=false;if U then U.Enabled=true end;if V then V.Enabled=false end;local b=R;if Q then b=ab()else local a=Y()b=Vector2.new(math.min(b.X,a.X),math.min(b.Y,a.Y))end;a.Size=UDim2.fromOffset(b.X,b.Y)x.CornerRadius=UDim.new(0,9)z.CornerRadius=UDim.new(0,9)y.Size=UDim2.new(1,0,0,38)A.Size=UDim2.new(1,-48,1,0)d.Position=UDim2.new(1,-48,0,0)d.Size=UDim2.fromOffset(48,38)d.Text="-";d.TextSize=21;B.Visible=true;C.Visible=true;F.Visible=true;L.Visible=true;N.Visible=true;O.Visible=true;local c=S;if not c then c=W()/2 end;local b=bb(c-b/2,b)a.Position=UDim2.fromOffset(b.X,b.Y)k()m()end end;local h=false;local l=nil;local s=nil;local t=nil;local u=0;local x=false;local y=false;local function z(a)local a=a.Position;return Vector2.new(a.X,a.Y)end;local function B()y=true;task.delay(0.35,function()y=false end)end;local function C(a)if not h then return end;if a and a~=l and not(l and l.UserInputType==Enum.UserInputType.Touch and a.UserInputType==Enum.UserInputType.Touch)then return end;if x and u>7 then B()end;h=false;l=nil end;local function F(a)if a.UserInputType~=Enum.UserInputType.MouseButton1 and a.UserInputType~=Enum.UserInputType.Touch then return end;if h and l==a then return end;h=true;l=a;s=z(a)t=Z()u=0;x=P;a.Changed:Connect(function()if a.UserInputState==Enum.UserInputState.End then C(a)end end)end;local function J(a,b)local c=a.AbsolutePosition;local a=a.AbsoluteSize;return b.X>=c.X and b.X<=c.X+a.X and b.Y>=c.Y and b.Y<=c.Y+a.Y end;local function L(b)if not h or not l then return end;if l.UserInputType==Enum.UserInputType.Touch then if b.UserInputType~=Enum.UserInputType.Touch then return end elseif b.UserInputType~=Enum.UserInputType.MouseMovement then return end;local b=z(b)-s;u=math.max(u,b.Magnitude)if x and u>7 then y=true end;local b=bb(t+b)a.Position=UDim2.fromOffset(b.X,b.Y)S=b+e()/2 end;local function M(a)h=true;l=nil;s=a;t=Z()u=0;x=P end;local function N(b)if not h or not s then return end;local b=b-s;u=math.max(u,b.Magnitude)if x and u>7 then y=true end;local b=bb(t+b)a.Position=UDim2.fromOffset(b.X,b.Y)S=b+e()/2 end;local function t()if not h or l then return end;if x and u>7 then B()end;h=false;s=nil end;local function h()local a;local b;local c=pcall(function()a=Instance.new("UIDragDetector")b=Instance.new("UIDragDetector")a.Name="TopBarDragDetector";b.Name="MinimizedDragDetector";a.DragStyle=Enum.UIDragDetectorDragStyle.TranslatePlane;b.DragStyle=Enum.UIDragDetectorDragStyle.TranslatePlane;a.ResponseStyle=Enum.UIDragDetectorResponseStyle.CustomOffset;b.ResponseStyle=Enum.UIDragDetectorResponseStyle.CustomOffset;a.Parent=A;b.Parent=d end)if not c then if a then a:Destroy()end;if b then b:Destroy()end;return false end;U=a;V=b;U.Enabled=not P;V.Enabled=P;U.DragStart:Connect(function(a)if not P then M(a)end end)U.DragContinue:Connect(function(a)if not P then N(a)end end)U.DragEnd:Connect(t)V.DragStart:Connect(function(a)if P then M(a)end end)V.DragContinue:Connect(function(a)if P then N(a)end end)V.DragEnd:Connect(t)return true end;local h=h()if not h then A.InputBegan:Connect(F)d.InputBegan:Connect(function(a)if P then F(a)end end)b.InputChanged:Connect(L)b.TouchMoved:Connect(L)b.InputEnded:Connect(C)b.TouchEnded:Connect(C)end;local l=false;local s=nil;local t=nil;local u=nil;local function x(a)if P then return end;if a.UserInputType~=Enum.UserInputType.MouseButton1 and a.UserInputType~=Enum.UserInputType.Touch then return end;l=true;s=a;t=z(a)u=e()Q=false;a.Changed:Connect(function()if a.UserInputState==Enum.UserInputState.End then l=false;s=nil;R=e()end end)end;local function B(b)if not l or not s then return end;if s.UserInputType==Enum.UserInputType.Touch then if b.UserInputType~=Enum.UserInputType.Touch then return end elseif b.UserInputType~=Enum.UserInputType.MouseMovement then return end;local b=z(b)-t;local c=Y()local d=math.clamp(u.X+b.X,math.min(f.X,c.X),math.min(g.X,c.X))local b=math.clamp(u.Y+b.Y,math.min(f.Y,c.Y),math.min(g.Y,c.Y))a.Size=UDim2.fromOffset(d,b)cb()k()end;O.InputBegan:Connect(x)b.InputChanged:Connect(B)local function f()if P then cb()return end;local b=e()local c;if Q then c=ab()else local a=Y()c=Vector2.new(math.min(b.X,a.X),math.min(b.Y,a.Y))end;a.Size=UDim2.fromOffset(c.X,c.Y)if Q or b.X>c.X or b.Y>c.Y then X(c)else cb()end;k()end;local e;local function g()if e then e:Disconnect()e=nil end;local a=workspace.CurrentCamera;if a then e=a:GetPropertyChangedSignal("ViewportSize"):Connect(f)end end;workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()g()f()end)w:GetPropertyChangedSignal("AbsoluteSize"):Connect(f)local e=false;local function f()if e then return end;local a=I.Text or"";local b=q(a)if b~=a then e=true;local c=I.CursorPosition;local d;if c>=1 then d=#q(a:sub(1,c-1))+1 end;I.Text=b;if d then I.CursorPosition=math.min(d,#b+1)end;e=false end;o()eb()end;I:GetPropertyChangedSignal("Text"):Connect(f)I:GetPropertyChangedSignal("CursorPosition"):Connect(function()eb()G()end)I.Focused:Connect(function()G()eb()end)I.FocusLost:Connect(function()K.Visible=false end)H:GetPropertyChangedSignal("CanvasPosition"):Connect(c)a:GetPropertyChangedSignal("AbsoluteSize"):Connect(k)D.Activated:Connect(function()j(I.Text,"Editor code")end)E.Activated:Connect(function()I.Text="";I:CaptureFocus()end)v.Activated:Connect(function()i()end)d.Activated:Connect(function()if y then y=false;return end;r(not P)end)b.InputBegan:Connect(function(a,c)if not w.Parent then return end;if not h and(a.UserInputType==Enum.UserInputType.MouseButton1 or a.UserInputType==Enum.UserInputType.Touch)then local b=z(a)if P then if J(d,b)then F(a)end elseif J(A,b)then F(a)end end;if c then return end;local c=b:IsKeyDown(Enum.KeyCode.LeftControl)or b:IsKeyDown(Enum.KeyCode.RightControl)local b=b:IsKeyDown(Enum.KeyCode.LeftMeta)or b:IsKeyDown(Enum.KeyCode.RightMeta)local b=c or b;if b and a.KeyCode==Enum.KeyCode.Return then j(I.Text,"Editor code")return end;if b and a.KeyCode==Enum.KeyCode.L then i()return end;if I:IsFocused()and a.KeyCode==Enum.KeyCode.Tab then p()end end)g()local b=ab()a.Size=UDim2.fromOffset(b.X,b.Y)X(b)nb(I.Text or"")k()o()eb()m()n("initialized","success")
+game.Loaded:Wait()
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TextService = game:GetService("TextService")
+
+local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local WINDOW_TITLE = "temporary ui"
+local DESIGN_SIZE = Vector2.new(780, 540)
+local MIN_WINDOW_SIZE = Vector2.new(280, 320)
+local MAX_WINDOW_SIZE = Vector2.new(1200, 850)
+local MINIMIZED_SIZE = 56
+
+local LINE_HEIGHT = 21
+local EDITOR_FONT = Enum.Font.Code
+local EDITOR_TEXT_SIZE = 16
+local INDENT = "    "
+
+local CHUNK_LINE_COUNT = 120
+local VISIBLE_LINE_BUFFER = 30
+local HIGHLIGHT_DEBOUNCE = 0.04
+
+local COLORS = {
+    Background = Color3.fromRGB(20, 21, 26),
+    TopBar = Color3.fromRGB(29, 30, 37),
+    Toolbar = Color3.fromRGB(24, 25, 31),
+    Panel = Color3.fromRGB(16, 17, 21),
+    Editor = Color3.fromRGB(13, 14, 18),
+    Gutter = Color3.fromRGB(21, 22, 27),
+    Text = Color3.fromRGB(225, 228, 235),
+    SubText = Color3.fromRGB(140, 145, 158),
+    Border = Color3.fromRGB(55, 58, 68),
+    Accent = Color3.fromRGB(75, 150, 255),
+    Run = Color3.fromRGB(55, 170, 100),
+    Warning = Color3.fromRGB(240, 175, 65),
+    Error = Color3.fromRGB(235, 80, 85),
+    Success = Color3.fromRGB(95, 215, 135),
+}
+
+local HIGHLIGHT_COLORS = {
+    Keyword = "#C586C0",
+    String = "#CE9178",
+    Number = "#B5CEA8",
+    Comment = "#6A9955",
+    Builtin = "#4FC1FF",
+    Boolean = "#569CD6",
+}
+
+local KEYWORDS = {
+    ["and"] = true,
+    ["break"] = true,
+    ["continue"] = true,
+    ["do"] = true,
+    ["else"] = true,
+    ["elseif"] = true,
+    ["end"] = true,
+    ["export"] = true,
+    ["for"] = true,
+    ["function"] = true,
+    ["if"] = true,
+    ["in"] = true,
+    ["local"] = true,
+    ["not"] = true,
+    ["or"] = true,
+    ["repeat"] = true,
+    ["return"] = true,
+    ["then"] = true,
+    ["type"] = true,
+    ["until"] = true,
+    ["while"] = true,
+}
+
+local BUILTINS = {
+    assert = true,
+    collectgarbage = true,
+    error = true,
+    getfenv = true,
+    getmetatable = true,
+    ipairs = true,
+    loadstring = true,
+    next = true,
+    pairs = true,
+    pcall = true,
+    print = true,
+    rawequal = true,
+    rawget = true,
+    rawset = true,
+    select = true,
+    setfenv = true,
+    setmetatable = true,
+    tostring = true,
+    type = true,
+    tonumber = true,
+    unpack = true,
+    xpcall = true,
+    coroutine = true,
+    string = true,
+    table = true,
+    math = true,
+    os = true,
+    task = true,
+    game = true,
+    workspace = true,
+    script = true,
+    Enum = true,
+    Instance = true,
+    Vector2 = true,
+    Vector3 = true,
+    UDim = true,
+    UDim2 = true,
+    Color3 = true,
+    CFrame = true,
+}
+
+local oldGui = playerGui:FindFirstChild("MiniLuaIDE")
+if oldGui then
+    oldGui:Destroy()
+end
+
+local function addCorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius or 6)
+    corner.Parent = parent
+    return corner
+end
+
+local function addStroke(parent, color, thickness)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color or COLORS.Border
+    stroke.Thickness = thickness or 1
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = parent
+    return stroke
+end
+
+local function createButton(parent, text, width, backgroundColor)
+    local button = Instance.new("TextButton")
+    button.Name = text:gsub("%s+", ""):gsub("[^%w]", "") .. "Button"
+    button.Size = UDim2.fromOffset(width, 30)
+    button.BackgroundColor3 = backgroundColor or Color3.fromRGB(45, 47, 56)
+    button.BorderSizePixel = 0
+    button.AutoButtonColor = true
+    button.Text = text
+    button.TextColor3 = COLORS.Text
+    button.TextSize = 14
+    button.Font = Enum.Font.GothamMedium
+    button.Parent = parent
+    addCorner(button, 5)
+    return button
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MiniLuaIDE"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+pcall(function()
+    screenGui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+end)
+
+pcall(function()
+    screenGui.SafeAreaCompatibility = Enum.SafeAreaCompatibility.None
+end)
+
+screenGui.Parent = playerGui
+
+local mainWindow = Instance.new("Frame")
+mainWindow.Name = "MainWindow"
+mainWindow.Size = UDim2.fromOffset(DESIGN_SIZE.X, DESIGN_SIZE.Y)
+mainWindow.Position = UDim2.fromOffset(0, 0)
+mainWindow.BackgroundColor3 = COLORS.Background
+mainWindow.BorderSizePixel = 0
+mainWindow.ClipsDescendants = true
+mainWindow.Active = true
+mainWindow.Parent = screenGui
+
+local windowCorner = addCorner(mainWindow, 9)
+addStroke(mainWindow, COLORS.Border, 1)
+
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, 38)
+topBar.BackgroundColor3 = COLORS.TopBar
+topBar.BorderSizePixel = 0
+topBar.Active = true
+topBar.Parent = mainWindow
+local topBarCorner = addCorner(topBar, 9)
+
+local dragHandle = Instance.new("Frame")
+dragHandle.Name = "DragHandle"
+dragHandle.Size = UDim2.new(1, -48, 1, 0)
+dragHandle.BackgroundTransparency = 1
+dragHandle.BorderSizePixel = 0
+dragHandle.Active = true
+dragHandle.ZIndex = 2
+dragHandle.Parent = topBar
+
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.new(1, -13, 1, 0)
+title.Position = UDim2.fromOffset(13, 0)
+title.BackgroundTransparency = 1
+title.Active = false
+title.ZIndex = 3
+title.Text = WINDOW_TITLE
+title.TextColor3 = COLORS.Text
+title.TextSize = 15
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = dragHandle
+
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Name = "MinimizeButton"
+minimizeButton.Size = UDim2.fromOffset(48, 38)
+minimizeButton.Position = UDim2.new(1, -48, 0, 0)
+minimizeButton.BackgroundTransparency = 1
+minimizeButton.Text = "-"
+minimizeButton.TextColor3 = COLORS.SubText
+minimizeButton.TextSize = 21
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.AutoButtonColor = false
+minimizeButton.Active = true
+minimizeButton.ZIndex = 4
+minimizeButton.Parent = topBar
+
+local toolbar = Instance.new("Frame")
+toolbar.Name = "Toolbar"
+toolbar.Position = UDim2.fromOffset(0, 38)
+toolbar.Size = UDim2.new(1, 0, 0, 42)
+toolbar.BackgroundColor3 = COLORS.Toolbar
+toolbar.BorderSizePixel = 0
+toolbar.Parent = mainWindow
+
+local toolbarPadding = Instance.new("UIPadding")
+toolbarPadding.PaddingLeft = UDim.new(0, 8)
+toolbarPadding.PaddingRight = UDim.new(0, 8)
+toolbarPadding.PaddingTop = UDim.new(0, 6)
+toolbarPadding.Parent = toolbar
+
+local toolbarLayout = Instance.new("UIListLayout")
+toolbarLayout.FillDirection = Enum.FillDirection.Horizontal
+toolbarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+toolbarLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+toolbarLayout.Padding = UDim.new(0, 6)
+toolbarLayout.Parent = toolbar
+
+local executeButton = createButton(toolbar, "▶ Execute", 96, COLORS.Run)
+local clearEditorButton = createButton(toolbar, "Clear Editor", 100)
+local clearOutputButton = createButton(toolbar, "Clear Output", 104)
+
+local editorPanel = Instance.new("Frame")
+editorPanel.Name = "EditorPanel"
+editorPanel.BackgroundColor3 = COLORS.Panel
+editorPanel.BorderSizePixel = 0
+editorPanel.ClipsDescendants = true
+editorPanel.Parent = mainWindow
+addCorner(editorPanel, 6)
+addStroke(editorPanel, COLORS.Border, 1)
+
+local lineNumberGutter = Instance.new("Frame")
+lineNumberGutter.Name = "LineNumberGutter"
+lineNumberGutter.Size = UDim2.new(0, 52, 1, 0)
+lineNumberGutter.BackgroundColor3 = COLORS.Gutter
+lineNumberGutter.BorderSizePixel = 0
+lineNumberGutter.ClipsDescendants = true
+lineNumberGutter.Parent = editorPanel
+
+local gutterDivider = Instance.new("Frame")
+gutterDivider.Size = UDim2.new(0, 1, 1, 0)
+gutterDivider.Position = UDim2.new(1, -1, 0, 0)
+gutterDivider.BackgroundColor3 = COLORS.Border
+gutterDivider.BorderSizePixel = 0
+gutterDivider.Parent = lineNumberGutter
+
+local editorScroll = Instance.new("ScrollingFrame")
+editorScroll.Name = "EditorScroll"
+editorScroll.Position = UDim2.fromOffset(52, 0)
+editorScroll.Size = UDim2.new(1, -52, 1, 0)
+editorScroll.BackgroundColor3 = COLORS.Editor
+editorScroll.BorderSizePixel = 0
+editorScroll.ClipsDescendants = true
+editorScroll.ScrollBarThickness = 7
+editorScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 83, 95)
+editorScroll.CanvasSize = UDim2.fromOffset(0, 0)
+editorScroll.ScrollingDirection = Enum.ScrollingDirection.XY
+editorScroll.Parent = editorPanel
+addCorner(editorScroll, 6)
+
+local codeEditor = Instance.new("TextBox")
+codeEditor.Name = "CodeEditor"
+codeEditor.Position = UDim2.fromOffset(10, 7)
+codeEditor.Size = UDim2.new(1, -22, 0, 300)
+codeEditor.BackgroundTransparency = 1
+codeEditor.BorderSizePixel = 0
+codeEditor.ClearTextOnFocus = false
+codeEditor.MultiLine = true
+codeEditor.TextEditable = true
+codeEditor.TextWrapped = false
+codeEditor.TextColor3 = COLORS.Text
+codeEditor.PlaceholderColor3 = Color3.fromRGB(90, 94, 105)
+codeEditor.PlaceholderText = "-- opiumware ios temp yay"
+codeEditor.TextSize = EDITOR_TEXT_SIZE
+codeEditor.Font = EDITOR_FONT
+codeEditor.TextXAlignment = Enum.TextXAlignment.Left
+codeEditor.TextYAlignment = Enum.TextYAlignment.Top
+codeEditor.Text = [[print("Hello from the editor!")]]
+codeEditor.TextTransparency = 1
+codeEditor.TextStrokeTransparency = 1
+codeEditor.ZIndex = 5
+codeEditor.Parent = editorScroll
+
+pcall(function()
+    codeEditor.MaxVisibleGraphemes = -1
+end)
+
+pcall(function()
+    codeEditor.LineHeight = LINE_HEIGHT / EDITOR_TEXT_SIZE
+end)
+
+local syntaxLayer = Instance.new("Folder")
+syntaxLayer.Name = "SyntaxLayer"
+syntaxLayer.Parent = editorScroll
+
+local customCaret = Instance.new("Frame")
+customCaret.Name = "CustomCaret"
+customCaret.Size = UDim2.fromOffset(2, EDITOR_TEXT_SIZE + 2)
+customCaret.BackgroundColor3 = COLORS.Text
+customCaret.BorderSizePixel = 0
+customCaret.Visible = false
+customCaret.Active = false
+customCaret.ZIndex = 10
+customCaret.Parent = editorScroll
+
+local outputPanel = Instance.new("Frame")
+outputPanel.Name = "OutputPanel"
+outputPanel.BackgroundColor3 = COLORS.Panel
+outputPanel.BorderSizePixel = 0
+outputPanel.ClipsDescendants = true
+outputPanel.Parent = mainWindow
+addCorner(outputPanel, 6)
+addStroke(outputPanel, COLORS.Border, 1)
+
+local outputHeader = Instance.new("Frame")
+outputHeader.Name = "OutputHeader"
+outputHeader.Size = UDim2.new(1, 0, 0, 28)
+outputHeader.BackgroundColor3 = COLORS.Gutter
+outputHeader.BorderSizePixel = 0
+outputHeader.Parent = outputPanel
+
+local outputHeaderText = Instance.new("TextLabel")
+outputHeaderText.Size = UDim2.new(1, -20, 1, 0)
+outputHeaderText.Position = UDim2.fromOffset(10, 0)
+outputHeaderText.BackgroundTransparency = 1
+outputHeaderText.Text = "OUTPUT"
+outputHeaderText.TextColor3 = COLORS.SubText
+outputHeaderText.TextSize = 12
+outputHeaderText.Font = Enum.Font.GothamBold
+outputHeaderText.TextXAlignment = Enum.TextXAlignment.Left
+outputHeaderText.Parent = outputHeader
+addCorner(outputHeader, 6)
+
+local outputScroll = Instance.new("ScrollingFrame")
+outputScroll.Name = "OutputScroll"
+outputScroll.Position = UDim2.fromOffset(0, 28)
+outputScroll.Size = UDim2.new(1, 0, 1, -28)
+outputScroll.BackgroundColor3 = COLORS.Editor
+outputScroll.BorderSizePixel = 0
+outputScroll.ScrollBarThickness = 6
+outputScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 83, 95)
+outputScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+outputScroll.CanvasSize = UDim2.fromOffset(0, 0)
+outputScroll.Parent = outputPanel
+addCorner(outputScroll, 6)
+
+local outputPadding = Instance.new("UIPadding")
+outputPadding.PaddingLeft = UDim.new(0, 9)
+outputPadding.PaddingRight = UDim.new(0, 9)
+outputPadding.PaddingTop = UDim.new(0, 7)
+outputPadding.PaddingBottom = UDim.new(0, 7)
+outputPadding.Parent = outputScroll
+
+local outputLayout = Instance.new("UIListLayout")
+outputLayout.SortOrder = Enum.SortOrder.LayoutOrder
+outputLayout.Padding = UDim.new(0, 3)
+outputLayout.Parent = outputScroll
+
+local statusBar = Instance.new("Frame")
+statusBar.Name = "StatusBar"
+statusBar.BackgroundColor3 = COLORS.TopBar
+statusBar.BorderSizePixel = 0
+statusBar.Parent = mainWindow
+addCorner(statusBar, 9)
+
+local statusText = Instance.new("TextLabel")
+statusText.Name = "StatusText"
+statusText.Size = UDim2.new(0.7, -10, 1, 0)
+statusText.Position = UDim2.fromOffset(10, 0)
+statusText.BackgroundTransparency = 1
+statusText.Text = ""
+statusText.TextColor3 = COLORS.SubText
+statusText.TextSize = 12
+statusText.Font = Enum.Font.Gotham
+statusText.TextXAlignment = Enum.TextXAlignment.Left
+statusText.TextTruncate = Enum.TextTruncate.AtEnd
+statusText.Parent = statusBar
+
+local cursorText = Instance.new("TextLabel")
+cursorText.Name = "CursorText"
+cursorText.Size = UDim2.new(0.3, -10, 1, 0)
+cursorText.Position = UDim2.new(0.7, 0, 0, 0)
+cursorText.BackgroundTransparency = 1
+cursorText.Text = "Ln 1, Col 1"
+cursorText.TextColor3 = COLORS.SubText
+cursorText.TextSize = 12
+cursorText.Font = Enum.Font.Gotham
+cursorText.TextXAlignment = Enum.TextXAlignment.Right
+cursorText.Parent = statusBar
+
+local resizeHandle = Instance.new("TextButton")
+resizeHandle.Name = "ResizeHandle"
+resizeHandle.Size = UDim2.fromOffset(28, 28)
+resizeHandle.Position = UDim2.new(1, -28, 1, -28)
+resizeHandle.BackgroundTransparency = 1
+resizeHandle.Text = "◢"
+resizeHandle.TextColor3 = COLORS.SubText
+resizeHandle.TextSize = 14
+resizeHandle.Font = Enum.Font.Code
+resizeHandle.ZIndex = 20
+resizeHandle.Active = true
+resizeHandle.Parent = mainWindow
+
+local isMinimized = false
+local autoFitToViewport = true
+local savedExpandedSize = DESIGN_SIZE
+local savedExpandedCenter = nil
+local outputCount = 0
+local topDragDetector = nil
+local minimizedDragDetector = nil
+
+local function getViewportSize()
+    local screenSize = screenGui.AbsoluteSize
+    if screenSize.X > 1 and screenSize.Y > 1 then
+        return screenSize
+    end
+
+    local camera = workspace.CurrentCamera
+    if camera then
+        return camera.ViewportSize
+    end
+
+    return Vector2.new(1920, 1080)
+end
+
+local function getScreenMargin()
+    if UserInputService.TouchEnabled then
+        return 12
+    end
+    return 24
+end
+
+local function getAvailableWindowSize()
+    local viewport = getViewportSize()
+    local margin = getScreenMargin()
+
+    return Vector2.new(
+        math.max(1, viewport.X - margin * 2),
+        math.max(1, viewport.Y - margin * 2)
+    )
+end
+
+local function fitDimension(available, preferred, minimum, maximum)
+    local value = math.min(available, preferred, maximum)
+
+    if available >= minimum then
+        return math.max(minimum, value)
+    end
+
+    return available
+end
+
+local function getResponsiveWindowSize()
+    local available = getAvailableWindowSize()
+
+    return Vector2.new(
+        fitDimension(
+            available.X,
+            DESIGN_SIZE.X,
+            MIN_WINDOW_SIZE.X,
+            MAX_WINDOW_SIZE.X
+        ),
+        fitDimension(
+            available.Y,
+            DESIGN_SIZE.Y,
+            MIN_WINDOW_SIZE.Y,
+            MAX_WINDOW_SIZE.Y
+        )
+    )
+end
+
+local function getWindowSize()
+    return Vector2.new(
+        mainWindow.Size.X.Offset,
+        mainWindow.Size.Y.Offset
+    )
+end
+
+local function getWindowPosition()
+    return Vector2.new(
+        mainWindow.Position.X.Offset,
+        mainWindow.Position.Y.Offset
+    )
+end
+
+local function clampPosition(position, windowSize)
+    local viewport = getViewportSize()
+    local margin = getScreenMargin()
+    local size = windowSize or getWindowSize()
+
+    local maximum = Vector2.new(
+        math.max(margin, viewport.X - size.X - margin),
+        math.max(margin, viewport.Y - size.Y - margin)
+    )
+
+    return Vector2.new(
+        math.clamp(position.X, margin, maximum.X),
+        math.clamp(position.Y, margin, maximum.Y)
+    )
+end
+
+local function centerWindow(windowSize)
+    local viewport = getViewportSize()
+    local size = windowSize or getWindowSize()
+
+    local position = Vector2.new(
+        (viewport.X - size.X) * 0.5,
+        (viewport.Y - size.Y) * 0.5
+    )
+
+    mainWindow.Position = UDim2.fromOffset(
+        math.floor(position.X),
+        math.floor(position.Y)
+    )
+end
+
+local function keepWindowVisible()
+    local position = clampPosition(getWindowPosition())
+    mainWindow.Position = UDim2.fromOffset(position.X, position.Y)
+end
+
+local function escapeRichText(text)
+    return text
+        :gsub("&", "&amp;")
+        :gsub("<", "&lt;")
+        :gsub(">", "&gt;")
+end
+
+local function colorToken(text, color)
+    return '<font color="' .. color .. '">' .. escapeRichText(text) .. "</font>"
+end
+
+local function findQuotedStringEnd(source, startIndex, quote)
+    local index = startIndex + 1
+
+    while index <= #source do
+        local character = source:sub(index, index)
+
+        if character == "\\" then
+            index += 2
+        elseif character == quote then
+            return index
+        else
+            index += 1
+        end
+    end
+
+    return #source
+end
+
+local function findLongStringEnd(source, startIndex)
+    local closingBracket = source:find("]]", startIndex + 2, true)
+    return closingBracket and closingBracket + 1 or #source
+end
+
+local function highlightLuau(source)
+    local result = table.create(math.max(8, #source // 4))
+    local index = 1
+    local sourceLength = #source
+
+    while index <= sourceLength do
+        local character = source:sub(index, index)
+        local nextTwo = source:sub(index, index + 1)
+        local nextFour = source:sub(index, index + 3)
+
+        if nextFour == "--[[" then
+            local finish = findLongStringEnd(source, index + 2)
+            table.insert(
+                result,
+                colorToken(
+                    source:sub(index, finish),
+                    HIGHLIGHT_COLORS.Comment
+                )
+            )
+            index = finish + 1
+
+        elseif nextTwo == "--" then
+            local newline = source:find("\n", index, true)
+            local finish = newline and newline - 1 or sourceLength
+
+            table.insert(
+                result,
+                colorToken(
+                    source:sub(index, finish),
+                    HIGHLIGHT_COLORS.Comment
+                )
+            )
+
+            index = finish + 1
+
+        elseif character == '"' or character == "'" then
+            local finish = findQuotedStringEnd(source, index, character)
+
+            table.insert(
+                result,
+                colorToken(
+                    source:sub(index, finish),
+                    HIGHLIGHT_COLORS.String
+                )
+            )
+
+            index = finish + 1
+
+        elseif nextTwo == "[[" then
+            local finish = findLongStringEnd(source, index)
+
+            table.insert(
+                result,
+                colorToken(
+                    source:sub(index, finish),
+                    HIGHLIGHT_COLORS.String
+                )
+            )
+
+            index = finish + 1
+
+        elseif character:match("[%a_]") then
+            local finish = index + 1
+
+            while finish <= sourceLength
+                and source:sub(finish, finish):match("[%w_]") do
+                finish += 1
+            end
+
+            local token = source:sub(index, finish - 1)
+            local color
+
+            if token == "true"
+                or token == "false"
+                or token == "nil" then
+                color = HIGHLIGHT_COLORS.Boolean
+
+            elseif KEYWORDS[token] then
+                color = HIGHLIGHT_COLORS.Keyword
+
+            elseif BUILTINS[token] then
+                color = HIGHLIGHT_COLORS.Builtin
+            end
+
+            table.insert(
+                result,
+                color
+                    and colorToken(token, color)
+                    or escapeRichText(token)
+            )
+
+            index = finish
+
+        elseif character:match("%d") then
+            local finish = index + 1
+
+            while finish <= sourceLength
+                and source:sub(finish, finish):match("[%w_%.]") do
+                finish += 1
+            end
+
+            table.insert(
+                result,
+                colorToken(
+                    source:sub(index, finish - 1),
+                    HIGHLIGHT_COLORS.Number
+                )
+            )
+
+            index = finish
+
+        else
+            table.insert(result, escapeRichText(character))
+            index += 1
+        end
+    end
+
+    return table.concat(result)
+end
+
+local function normalizeAsciiQuotes(text)
+    return text
+        :gsub("“", '"')
+        :gsub("”", '"')
+        :gsub("„", '"')
+        :gsub("‟", '"')
+        :gsub("‘", "'")
+        :gsub("’", "'")
+        :gsub("‚", "'")
+        :gsub("‛", "'")
+end
+
+local documentText = nil
+local documentLines = { "" }
+local documentLineStarts = { 1 }
+
+local longestLine = ""
+local measuredLongestWidth = 0
+
+local syntaxChunks = {}
+local gutterChunks = {}
+local chunkCache = {}
+
+local renderGeneration = 0
+local scheduledRenderGeneration = 0
+
+local function destroyChunkLabels()
+    for _, label in pairs(syntaxChunks) do
+        label:Destroy()
+    end
+
+    for _, label in pairs(gutterChunks) do
+        label:Destroy()
+    end
+
+    table.clear(syntaxChunks)
+    table.clear(gutterChunks)
+end
+
+local function rebuildDocumentCache(text)
+    documentText = text
+
+    table.clear(documentLines)
+    table.clear(documentLineStarts)
+    table.clear(chunkCache)
+
+    longestLine = ""
+
+    local position = 1
+    local textLength = #text
+
+    while true do
+        table.insert(documentLineStarts, position)
+
+        local newline = text:find("\n", position, true)
+        local line
+
+        if newline then
+            line = text:sub(position, newline - 1)
+        else
+            line = text:sub(position)
+        end
+
+        table.insert(documentLines, line)
+
+        if #line > #longestLine then
+            longestLine = line
+        end
+
+        if not newline then
+            break
+        end
+
+        position = newline + 1
+
+        if position > textLength + 1 then
+            break
+        end
+    end
+
+    if #documentLines == 0 then
+        documentLines[1] = ""
+        documentLineStarts[1] = 1
+    end
+
+    if longestLine == "" then
+        measuredLongestWidth = 0
+    else
+        local success, measured = pcall(function()
+            return TextService:GetTextSize(
+                longestLine,
+                EDITOR_TEXT_SIZE,
+                EDITOR_FONT,
+                Vector2.new(1000000, LINE_HEIGHT)
+            )
+        end)
+
+        if success then
+            measuredLongestWidth = measured.X
+        else
+            measuredLongestWidth =
+                #longestLine * EDITOR_TEXT_SIZE * 0.61
+        end
+    end
+
+    destroyChunkLabels()
+    renderGeneration += 1
+end
+
+local function createSyntaxChunk()
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.BorderSizePixel = 0
+    label.RichText = true
+    label.TextWrapped = false
+    label.TextColor3 = COLORS.Text
+    label.TextSize = EDITOR_TEXT_SIZE
+    label.Font = EDITOR_FONT
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextYAlignment = Enum.TextYAlignment.Top
+    label.ZIndex = 1
+
+    pcall(function()
+        label.LineHeight = LINE_HEIGHT / EDITOR_TEXT_SIZE
+    end)
+
+    pcall(function()
+        label.MaxVisibleGraphemes = -1
+    end)
+
+    label.Parent = syntaxLayer
+    return label
+end
+
+local function createGutterChunk()
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.BorderSizePixel = 0
+    label.TextWrapped = false
+    label.RichText = false
+    label.TextColor3 = Color3.fromRGB(100, 105, 118)
+    label.TextSize = EDITOR_TEXT_SIZE
+    label.Font = EDITOR_FONT
+    label.TextXAlignment = Enum.TextXAlignment.Right
+    label.TextYAlignment = Enum.TextYAlignment.Top
+
+    pcall(function()
+        label.LineHeight = LINE_HEIGHT / EDITOR_TEXT_SIZE
+    end)
+
+    pcall(function()
+        label.MaxVisibleGraphemes = -1
+    end)
+
+    label.Parent = lineNumberGutter
+    return label
+end
+
+local function getChunkData(chunkStart)
+    local cached = chunkCache[chunkStart]
+    if cached then
+        return cached
+    end
+
+    local chunkEnd = math.min(
+        #documentLines,
+        chunkStart + CHUNK_LINE_COUNT - 1
+    )
+
+    local source = table.concat(
+        documentLines,
+        "\n",
+        chunkStart,
+        chunkEnd
+    )
+
+    local numberList = table.create(chunkEnd - chunkStart + 1)
+
+    for lineNumber = chunkStart, chunkEnd do
+        numberList[lineNumber - chunkStart + 1] = tostring(lineNumber)
+    end
+
+    cached = {
+        endLine = chunkEnd,
+        highlighted = highlightLuau(source),
+        lineNumbers = table.concat(numberList, "\n"),
+    }
+
+    chunkCache[chunkStart] = cached
+    return cached
+end
+
+local function getEditorDocumentSize()
+    local lineCount = math.max(1, #documentLines)
+
+    local height = math.max(
+        editorPanel.AbsoluteSize.Y - 14,
+        lineCount * LINE_HEIGHT + 20
+    )
+
+    local width = math.max(
+        editorScroll.AbsoluteSize.X - 25,
+        measuredLongestWidth + 40
+    )
+
+    return Vector2.new(width, height)
+end
+
+local function renderVisibleChunks()
+    if not screenGui.Parent or isMinimized then
+        return
+    end
+
+    local lineCount = math.max(1, #documentLines)
+    local scrollY = editorScroll.CanvasPosition.Y
+    local viewportHeight = math.max(
+        1,
+        editorScroll.AbsoluteWindowSize.Y
+    )
+
+    local firstVisibleLine =
+        math.floor(math.max(0, scrollY - 7) / LINE_HEIGHT) + 1
+
+    local lastVisibleLine =
+        math.ceil((scrollY + viewportHeight) / LINE_HEIGHT) + 1
+
+    firstVisibleLine = math.max(
+        1,
+        firstVisibleLine - VISIBLE_LINE_BUFFER
+    )
+
+    lastVisibleLine = math.min(
+        lineCount,
+        lastVisibleLine + VISIBLE_LINE_BUFFER
+    )
+
+    local firstChunk =
+        math.floor((firstVisibleLine - 1) / CHUNK_LINE_COUNT)
+        * CHUNK_LINE_COUNT
+        + 1
+
+    local lastChunk =
+        math.floor((lastVisibleLine - 1) / CHUNK_LINE_COUNT)
+        * CHUNK_LINE_COUNT
+        + 1
+
+    local documentSize = getEditorDocumentSize()
+    local usedChunks = {}
+
+    for chunkStart = firstChunk, lastChunk, CHUNK_LINE_COUNT do
+        usedChunks[chunkStart] = true
+
+        local data = getChunkData(chunkStart)
+        local chunkLineCount = data.endLine - chunkStart + 1
+        local chunkY = 7 + (chunkStart - 1) * LINE_HEIGHT
+
+        local syntaxLabel = syntaxChunks[chunkStart]
+
+        if not syntaxLabel then
+            syntaxLabel = createSyntaxChunk()
+            syntaxChunks[chunkStart] = syntaxLabel
+            syntaxLabel.Text = data.highlighted
+        end
+
+        syntaxLabel.Position = UDim2.fromOffset(10, chunkY)
+        syntaxLabel.Size = UDim2.fromOffset(
+            documentSize.X,
+            chunkLineCount * LINE_HEIGHT + 4
+        )
+
+        local gutterLabel = gutterChunks[chunkStart]
+
+        if not gutterLabel then
+            gutterLabel = createGutterChunk()
+            gutterChunks[chunkStart] = gutterLabel
+            gutterLabel.Text = data.lineNumbers
+        end
+
+        gutterLabel.Position = UDim2.fromOffset(
+            0,
+            chunkY - scrollY
+        )
+
+        gutterLabel.Size = UDim2.new(
+            1,
+            -8,
+            0,
+            chunkLineCount * LINE_HEIGHT + 4
+        )
+    end
+
+    for chunkStart, label in pairs(syntaxChunks) do
+        if not usedChunks[chunkStart] then
+            label:Destroy()
+            syntaxChunks[chunkStart] = nil
+        end
+    end
+
+    for chunkStart, label in pairs(gutterChunks) do
+        if not usedChunks[chunkStart] then
+            label:Destroy()
+            gutterChunks[chunkStart] = nil
+        end
+    end
+end
+
+local function scheduleVisibleRender()
+    scheduledRenderGeneration += 1
+    local myGeneration = scheduledRenderGeneration
+
+    task.delay(HIGHLIGHT_DEBOUNCE, function()
+        if myGeneration ~= scheduledRenderGeneration then
+            return
+        end
+
+        if screenGui.Parent then
+            renderVisibleChunks()
+        end
+    end)
+end
+
+local function updateEditorGeometry()
+    local documentSize = getEditorDocumentSize()
+
+    codeEditor.Position = UDim2.fromOffset(10, 7)
+    codeEditor.Size = UDim2.fromOffset(
+        documentSize.X,
+        documentSize.Y
+    )
+
+    editorScroll.CanvasSize = UDim2.fromOffset(
+        documentSize.X + 15,
+        documentSize.Y + 15
+    )
+
+    scheduleVisibleRender()
+end
+
+local function updateEditorContent()
+    local text = codeEditor.Text or ""
+
+    if text ~= documentText then
+        rebuildDocumentCache(text)
+    end
+
+    updateEditorGeometry()
+end
+
+local caretBlinkStarted = os.clock()
+
+local function resetCaretBlink()
+    caretBlinkStarted = os.clock()
+
+    if codeEditor:IsFocused()
+        and codeEditor.CursorPosition ~= -1 then
+        customCaret.Visible = true
+    end
+end
+
+task.spawn(function()
+    while screenGui.Parent do
+        task.wait(0.08)
+
+        if codeEditor:IsFocused()
+            and codeEditor.CursorPosition ~= -1 then
+
+            local elapsed = os.clock() - caretBlinkStarted
+            customCaret.Visible = (elapsed % 1) < 0.5
+        else
+            customCaret.Visible = false
+        end
+    end
+end)
+
+local function findCursorLine(cursorPosition)
+    local lineCount = #documentLineStarts
+
+    if lineCount <= 1 then
+        return 1
+    end
+
+    local low = 1
+    local high = lineCount
+    local result = 1
+
+    while low <= high do
+        local middle = math.floor((low + high) / 2)
+
+        if documentLineStarts[middle] <= cursorPosition then
+            result = middle
+            low = middle + 1
+        else
+            high = middle - 1
+        end
+    end
+
+    return result
+end
+
+local function keepCaretVisible(caretX, caretY)
+    local current = editorScroll.CanvasPosition
+    local viewport = editorScroll.AbsoluteWindowSize
+
+    if viewport.X <= 0 or viewport.Y <= 0 then
+        return
+    end
+
+    local nextX = current.X
+    local nextY = current.Y
+    local margin = 18
+
+    if caretX < current.X + margin then
+        nextX = math.max(0, caretX - margin)
+    elseif caretX > current.X + viewport.X - margin then
+        nextX = math.max(
+            0,
+            caretX - viewport.X + margin
+        )
+    end
+
+    if caretY < current.Y + margin then
+        nextY = math.max(0, caretY - margin)
+    elseif caretY + LINE_HEIGHT
+        > current.Y + viewport.Y - margin then
+
+        nextY = math.max(
+            0,
+            caretY
+                - viewport.Y
+                + LINE_HEIGHT
+                + margin
+        )
+    end
+
+    if nextX ~= current.X or nextY ~= current.Y then
+        editorScroll.CanvasPosition =
+            Vector2.new(nextX, nextY)
+    end
+end
+
+local function updateCursor()
+    local cursorPosition = codeEditor.CursorPosition
+
+    if cursorPosition == -1 then
+        customCaret.Visible = false
+        return
+    end
+
+    if documentText ~= codeEditor.Text then
+        rebuildDocumentCache(codeEditor.Text or "")
+        updateEditorGeometry()
+    end
+
+    cursorPosition = math.clamp(
+        cursorPosition,
+        1,
+        #codeEditor.Text + 1
+    )
+
+    local lineNumber = findCursorLine(cursorPosition)
+    local lineStart = documentLineStarts[lineNumber] or 1
+
+    local column = cursorPosition - lineStart + 1
+
+    cursorText.Text = string.format(
+        "Ln %d, Col %d",
+        lineNumber,
+        column
+    )
+
+    local beforeCaret = codeEditor.Text:sub(
+        lineStart,
+        math.max(lineStart - 1, cursorPosition - 1)
+    )
+
+    beforeCaret = beforeCaret:gsub("\n", "")
+
+    local caretOffsetX = 0
+
+    if #beforeCaret > 0 then
+        local success, bounds = pcall(function()
+            return TextService:GetTextSize(
+                beforeCaret,
+                EDITOR_TEXT_SIZE,
+                EDITOR_FONT,
+                Vector2.new(1000000, LINE_HEIGHT)
+            )
+        end)
+
+        if success then
+            caretOffsetX = bounds.X
+        else
+            caretOffsetX =
+                #beforeCaret * EDITOR_TEXT_SIZE * 0.61
+        end
+    end
+
+    local caretX = 10 + caretOffsetX
+    local caretY = 7 + (lineNumber - 1) * LINE_HEIGHT
+
+    customCaret.Position = UDim2.fromOffset(
+        caretX,
+        caretY
+    )
+
+    resetCaretBlink()
+
+    keepCaretVisible(
+        caretX,
+        caretY
+    )
+end
+
+local function updateLineNumberScroll()
+    scheduleVisibleRender()
+end
+
+local function updateToolbar()
+    local width = math.max(1, mainWindow.AbsoluteSize.X - 16)
+    local gap = 6
+    local buttonWidth = math.floor((width - gap * 2) / 3)
+    local compact = buttonWidth < 92
+
+    buttonWidth = math.max(70, buttonWidth)
+
+    executeButton.Size = UDim2.fromOffset(buttonWidth, 30)
+    clearEditorButton.Size = UDim2.fromOffset(buttonWidth, 30)
+    clearOutputButton.Size = UDim2.fromOffset(buttonWidth, 30)
+
+    local textSize = compact and 11 or 14
+
+    executeButton.TextSize = textSize
+    clearEditorButton.TextSize = textSize
+    clearOutputButton.TextSize = textSize
+end
+
+local function updateLayout()
+    if isMinimized then
+        return
+    end
+
+    local windowWidth = mainWindow.AbsoluteSize.X
+    local windowHeight = mainWindow.AbsoluteSize.Y
+
+    local sidePadding = 8
+    local topContent = 86
+    local statusHeight = 24
+    local panelGap = 8
+
+    local panelSpace = math.max(
+        2,
+        windowHeight
+            - topContent
+            - statusHeight
+            - panelGap * 2
+    )
+
+    local compact = panelSpace < 300
+
+    local minimumEditorHeight = compact and 90 or 120
+    local minimumOutputHeight = compact and 72 or 105
+
+    local outputHeight
+    local editorHeight
+
+    if panelSpace < minimumEditorHeight + minimumOutputHeight then
+        outputHeight = math.max(
+            1,
+            math.floor(panelSpace * 0.3)
+        )
+
+        editorHeight = math.max(
+            1,
+            panelSpace - outputHeight
+        )
+    else
+        local maximumOutputHeight = math.min(
+            220,
+            panelSpace - minimumEditorHeight
+        )
+
+        outputHeight = math.clamp(
+            math.floor(panelSpace * 0.3),
+            minimumOutputHeight,
+            maximumOutputHeight
+        )
+
+        editorHeight = panelSpace - outputHeight
+    end
+
+    local panelWidth = math.max(
+        120,
+        windowWidth - sidePadding * 2
+    )
+
+    editorPanel.Position =
+        UDim2.fromOffset(sidePadding, topContent)
+
+    editorPanel.Size =
+        UDim2.fromOffset(panelWidth, editorHeight)
+
+    outputPanel.Position =
+        UDim2.fromOffset(
+            sidePadding,
+            topContent + editorHeight + panelGap
+        )
+
+    outputPanel.Size =
+        UDim2.fromOffset(panelWidth, outputHeight)
+
+    statusBar.Position =
+        UDim2.new(0, 0, 1, -statusHeight)
+
+    statusBar.Size =
+        UDim2.new(1, 0, 0, statusHeight)
+
+    resizeHandle.Position =
+        UDim2.new(1, -28, 1, -28)
+
+    updateToolbar()
+    updateEditorGeometry()
+    scheduleVisibleRender()
+end
+
+local function scrollOutputToBottom()
+    task.defer(function()
+        if not outputScroll.Parent then
+            return
+        end
+
+        outputScroll.CanvasPosition = Vector2.new(
+            0,
+            math.max(
+                0,
+                outputLayout.AbsoluteContentSize.Y
+                    - outputScroll.AbsoluteWindowSize.Y
+            )
+        )
+    end)
+end
+
+local function appendOutput(message, kind)
+    outputCount += 1
+
+    local label = Instance.new("TextLabel")
+
+    label.Name = "Output_" .. outputCount
+    label.Size = UDim2.new(1, -2, 0, 20)
+    label.AutomaticSize = Enum.AutomaticSize.Y
+    label.BackgroundTransparency = 1
+    label.TextWrapped = true
+    label.RichText = false
+    label.TextSize = 14
+    label.Font = EDITOR_FONT
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextYAlignment = Enum.TextYAlignment.Top
+    label.LayoutOrder = outputCount
+
+    if kind == "warning" then
+        label.Text = "[WARNING] " .. tostring(message)
+        label.TextColor3 = COLORS.Warning
+
+    elseif kind == "error" then
+        label.Text = "[ERROR] " .. tostring(message)
+        label.TextColor3 = COLORS.Error
+
+    elseif kind == "success" then
+        label.Text = "[IDE] " .. tostring(message)
+        label.TextColor3 = COLORS.Success
+
+    elseif kind == "system" then
+        label.Text = "[IDE] " .. tostring(message)
+        label.TextColor3 = COLORS.Accent
+
+    else
+        label.Text = tostring(message)
+        label.TextColor3 = COLORS.Text
+    end
+
+    label.Parent = outputScroll
+    scrollOutputToBottom()
+end
+
+local function clearOutput()
+    for _, child in ipairs(outputScroll:GetChildren()) do
+        if child:IsA("TextLabel") then
+            child:Destroy()
+        end
+    end
+
+    outputCount = 0
+end
+
+local function executeCode(source, sourceName)
+    local compiled, compileError = loadstring(source)
+
+    if not compiled then
+        appendOutput(
+            "Failed to compile: " .. tostring(compileError),
+            "error"
+        )
+        return
+    end
+
+    local succeeded, runtimeError = pcall(compiled)
+
+    if not succeeded then
+        appendOutput(
+            "failed to execute: " .. tostring(runtimeError),
+            "error"
+        )
+    else
+        appendOutput(
+            "code executed successfully",
+            "success"
+        )
+    end
+end
+
+local function insertIndent()
+    local cursorPosition = codeEditor.CursorPosition
+
+    if cursorPosition == -1 then
+        codeEditor.Text ..= INDENT
+        codeEditor.CursorPosition = #codeEditor.Text + 1
+        return
+    end
+
+    local beforeCursor =
+        codeEditor.Text:sub(1, cursorPosition - 1)
+
+    local afterCursor =
+        codeEditor.Text:sub(cursorPosition)
+
+    codeEditor.Text =
+        beforeCursor .. INDENT .. afterCursor
+
+    codeEditor.CursorPosition =
+        cursorPosition + #INDENT
+end
+
+local function saveExpandedCenter()
+    local position = getWindowPosition()
+    local size = getWindowSize()
+
+    savedExpandedCenter = position + size / 2
+end
+
+local function setMinimized(minimized)
+    if minimized == isMinimized then
+        return
+    end
+
+    if minimized then
+        savedExpandedSize = getWindowSize()
+        saveExpandedCenter()
+
+        isMinimized = true
+
+        if topDragDetector then
+            topDragDetector.Enabled = false
+        end
+
+        if minimizedDragDetector then
+            minimizedDragDetector.Enabled = true
+        end
+
+        toolbar.Visible = false
+        editorPanel.Visible = false
+        outputPanel.Visible = false
+        statusBar.Visible = false
+        resizeHandle.Visible = false
+        title.Visible = false
+
+        local miniSize =
+            Vector2.new(MINIMIZED_SIZE, MINIMIZED_SIZE)
+
+        local center =
+            savedExpandedCenter
+            or (getWindowPosition() + getWindowSize() / 2)
+
+        local miniPosition =
+            clampPosition(center - miniSize / 2, miniSize)
+
+        mainWindow.Size =
+            UDim2.fromOffset(miniSize.X, miniSize.Y)
+
+        mainWindow.Position =
+            UDim2.fromOffset(
+                miniPosition.X,
+                miniPosition.Y
+            )
+
+        windowCorner.CornerRadius = UDim.new(1, 0)
+        topBarCorner.CornerRadius = UDim.new(1, 0)
+
+        topBar.Size = UDim2.fromScale(1, 1)
+        dragHandle.Size = UDim2.fromScale(1, 1)
+
+        minimizeButton.Position = UDim2.fromOffset(0, 0)
+        minimizeButton.Size = UDim2.fromScale(1, 1)
+
+        minimizeButton.Text = "↗"
+        minimizeButton.TextSize = 24
+
+        customCaret.Visible = false
+
+    else
+        isMinimized = false
+
+        if topDragDetector then
+            topDragDetector.Enabled = true
+        end
+
+        if minimizedDragDetector then
+            minimizedDragDetector.Enabled = false
+        end
+
+        local restoredSize = savedExpandedSize
+
+        if autoFitToViewport then
+            restoredSize = getResponsiveWindowSize()
+        else
+            local available = getAvailableWindowSize()
+
+            restoredSize = Vector2.new(
+                math.min(restoredSize.X, available.X),
+                math.min(restoredSize.Y, available.Y)
+            )
+        end
+
+        mainWindow.Size =
+            UDim2.fromOffset(
+                restoredSize.X,
+                restoredSize.Y
+            )
+
+        windowCorner.CornerRadius = UDim.new(0, 9)
+        topBarCorner.CornerRadius = UDim.new(0, 9)
+
+        topBar.Size = UDim2.new(1, 0, 0, 38)
+        dragHandle.Size = UDim2.new(1, -48, 1, 0)
+
+        minimizeButton.Position =
+            UDim2.new(1, -48, 0, 0)
+
+        minimizeButton.Size =
+            UDim2.fromOffset(48, 38)
+
+        minimizeButton.Text = "-"
+        minimizeButton.TextSize = 21
+
+        title.Visible = true
+        toolbar.Visible = true
+        editorPanel.Visible = true
+        outputPanel.Visible = true
+        statusBar.Visible = true
+        resizeHandle.Visible = true
+
+        local center = savedExpandedCenter
+
+        if not center then
+            center = getViewportSize() / 2
+        end
+
+        local restoredPosition =
+            clampPosition(
+                center - restoredSize / 2,
+                restoredSize
+            )
+
+        mainWindow.Position =
+            UDim2.fromOffset(
+                restoredPosition.X,
+                restoredPosition.Y
+            )
+
+        updateLayout()
+        scheduleVisibleRender()
+    end
+end
+
+local dragging = false
+local dragInput = nil
+local dragStart = nil
+local dragStartPosition = nil
+local dragDistance = 0
+local dragStartedMinimized = false
+local suppressMinimizeActivation = false
+
+local function getInputPosition(input)
+    local position = input.Position
+    return Vector2.new(position.X, position.Y)
+end
+
+local function suppressMinimizeTap()
+    suppressMinimizeActivation = true
+
+    task.delay(0.35, function()
+        suppressMinimizeActivation = false
+    end)
+end
+
+local function finishDrag(input)
+    if not dragging then
+        return
+    end
+
+    if input
+        and input ~= dragInput
+        and not (
+            dragInput
+            and dragInput.UserInputType
+                == Enum.UserInputType.Touch
+            and input.UserInputType
+                == Enum.UserInputType.Touch
+        ) then
+        return
+    end
+
+    if dragStartedMinimized and dragDistance > 7 then
+        suppressMinimizeTap()
+    end
+
+    dragging = false
+    dragInput = nil
+end
+
+local function beginDrag(input)
+    if input.UserInputType ~= Enum.UserInputType.MouseButton1
+        and input.UserInputType ~= Enum.UserInputType.Touch then
+        return
+    end
+
+    if dragging and dragInput == input then
+        return
+    end
+
+    dragging = true
+    dragInput = input
+    dragStart = getInputPosition(input)
+    dragStartPosition = getWindowPosition()
+    dragDistance = 0
+    dragStartedMinimized = isMinimized
+
+    input.Changed:Connect(function()
+        if input.UserInputState == Enum.UserInputState.End then
+            finishDrag(input)
+        end
+    end)
+end
+
+local function isPointInside(guiObject, point)
+    local position = guiObject.AbsolutePosition
+    local size = guiObject.AbsoluteSize
+
+    return point.X >= position.X
+        and point.X <= position.X + size.X
+        and point.Y >= position.Y
+        and point.Y <= position.Y + size.Y
+end
+
+local function updateDrag(input)
+    if not dragging or not dragInput then
+        return
+    end
+
+    if dragInput.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+    elseif input.UserInputType
+        ~= Enum.UserInputType.MouseMovement then
+        return
+    end
+
+    local delta = getInputPosition(input) - dragStart
+
+    dragDistance = math.max(
+        dragDistance,
+        delta.Magnitude
+    )
+
+    if dragStartedMinimized and dragDistance > 7 then
+        suppressMinimizeActivation = true
+    end
+
+    local nextPosition =
+        clampPosition(dragStartPosition + delta)
+
+    mainWindow.Position =
+        UDim2.fromOffset(
+            nextPosition.X,
+            nextPosition.Y
+        )
+
+    savedExpandedCenter =
+        nextPosition + getWindowSize() / 2
+end
+
+local function beginDetectorDrag(inputPosition)
+    dragging = true
+    dragInput = nil
+    dragStart = inputPosition
+    dragStartPosition = getWindowPosition()
+    dragDistance = 0
+    dragStartedMinimized = isMinimized
+end
+
+local function updateDetectorDrag(inputPosition)
+    if not dragging or not dragStart then
+        return
+    end
+
+    local delta = inputPosition - dragStart
+
+    dragDistance = math.max(
+        dragDistance,
+        delta.Magnitude
+    )
+
+    if dragStartedMinimized and dragDistance > 7 then
+        suppressMinimizeActivation = true
+    end
+
+    local nextPosition =
+        clampPosition(dragStartPosition + delta)
+
+    mainWindow.Position =
+        UDim2.fromOffset(
+            nextPosition.X,
+            nextPosition.Y
+        )
+
+    savedExpandedCenter =
+        nextPosition + getWindowSize() / 2
+end
+
+local function finishDetectorDrag()
+    if not dragging or dragInput then
+        return
+    end
+
+    if dragStartedMinimized and dragDistance > 7 then
+        suppressMinimizeTap()
+    end
+
+    dragging = false
+    dragStart = nil
+end
+
+local function setupUIDragDetectors()
+    local topDetector
+    local miniDetector
+
+    local success = pcall(function()
+        topDetector = Instance.new("UIDragDetector")
+        miniDetector = Instance.new("UIDragDetector")
+
+        topDetector.Name = "TopBarDragDetector"
+        miniDetector.Name = "MinimizedDragDetector"
+
+        topDetector.DragStyle =
+            Enum.UIDragDetectorDragStyle.TranslatePlane
+
+        miniDetector.DragStyle =
+            Enum.UIDragDetectorDragStyle.TranslatePlane
+
+        topDetector.ResponseStyle =
+            Enum.UIDragDetectorResponseStyle.CustomOffset
+
+        miniDetector.ResponseStyle =
+            Enum.UIDragDetectorResponseStyle.CustomOffset
+
+        topDetector.Parent = dragHandle
+        miniDetector.Parent = minimizeButton
+    end)
+
+    if not success then
+        if topDetector then
+            topDetector:Destroy()
+        end
+
+        if miniDetector then
+            miniDetector:Destroy()
+        end
+
+        return false
+    end
+
+    topDragDetector = topDetector
+    minimizedDragDetector = miniDetector
+
+    topDragDetector.Enabled = not isMinimized
+    minimizedDragDetector.Enabled = isMinimized
+
+    topDragDetector.DragStart:Connect(function(inputPosition)
+        if not isMinimized then
+            beginDetectorDrag(inputPosition)
+        end
+    end)
+
+    topDragDetector.DragContinue:Connect(function(inputPosition)
+        if not isMinimized then
+            updateDetectorDrag(inputPosition)
+        end
+    end)
+
+    topDragDetector.DragEnd:Connect(
+        finishDetectorDrag
+    )
+
+    minimizedDragDetector.DragStart:Connect(
+        function(inputPosition)
+            if isMinimized then
+                beginDetectorDrag(inputPosition)
+            end
+        end
+    )
+
+    minimizedDragDetector.DragContinue:Connect(
+        function(inputPosition)
+            if isMinimized then
+                updateDetectorDrag(inputPosition)
+            end
+        end
+    )
+
+    minimizedDragDetector.DragEnd:Connect(
+        finishDetectorDrag
+    )
+
+    return true
+end
+
+local usingUIDragDetector = setupUIDragDetectors()
+
+if not usingUIDragDetector then
+    dragHandle.InputBegan:Connect(beginDrag)
+
+    minimizeButton.InputBegan:Connect(function(input)
+        if isMinimized then
+            beginDrag(input)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(updateDrag)
+    UserInputService.TouchMoved:Connect(updateDrag)
+
+    UserInputService.InputEnded:Connect(finishDrag)
+    UserInputService.TouchEnded:Connect(finishDrag)
+end
+
+local resizing = false
+local resizeInput = nil
+local resizeStart = nil
+local resizeStartSize = nil
+
+local function beginResize(input)
+    if isMinimized then
+        return
+    end
+
+    if input.UserInputType ~= Enum.UserInputType.MouseButton1
+        and input.UserInputType ~= Enum.UserInputType.Touch then
+        return
+    end
+
+    resizing = true
+    resizeInput = input
+    resizeStart = getInputPosition(input)
+    resizeStartSize = getWindowSize()
+    autoFitToViewport = false
+
+    input.Changed:Connect(function()
+        if input.UserInputState == Enum.UserInputState.End then
+            resizing = false
+            resizeInput = nil
+            savedExpandedSize = getWindowSize()
+        end
+    end)
+end
+
+local function updateResize(input)
+    if not resizing or not resizeInput then
+        return
+    end
+
+    if resizeInput.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+    elseif input.UserInputType
+        ~= Enum.UserInputType.MouseMovement then
+        return
+    end
+
+    local delta =
+        getInputPosition(input) - resizeStart
+
+    local available = getAvailableWindowSize()
+
+    local width = math.clamp(
+        resizeStartSize.X + delta.X,
+        math.min(MIN_WINDOW_SIZE.X, available.X),
+        math.min(MAX_WINDOW_SIZE.X, available.X)
+    )
+
+    local height = math.clamp(
+        resizeStartSize.Y + delta.Y,
+        math.min(MIN_WINDOW_SIZE.Y, available.Y),
+        math.min(MAX_WINDOW_SIZE.Y, available.Y)
+    )
+
+    mainWindow.Size =
+        UDim2.fromOffset(width, height)
+
+    keepWindowVisible()
+    updateLayout()
+end
+
+resizeHandle.InputBegan:Connect(beginResize)
+UserInputService.InputChanged:Connect(updateResize)
+
+local function updateForViewport()
+    if isMinimized then
+        keepWindowVisible()
+        return
+    end
+
+    local oldSize = getWindowSize()
+    local newSize
+
+    if autoFitToViewport then
+        newSize = getResponsiveWindowSize()
+    else
+        local available = getAvailableWindowSize()
+
+        newSize = Vector2.new(
+            math.min(oldSize.X, available.X),
+            math.min(oldSize.Y, available.Y)
+        )
+    end
+
+    mainWindow.Size =
+        UDim2.fromOffset(newSize.X, newSize.Y)
+
+    if autoFitToViewport
+        or oldSize.X > newSize.X
+        or oldSize.Y > newSize.Y then
+        centerWindow(newSize)
+    else
+        keepWindowVisible()
+    end
+
+    updateLayout()
+end
+
+local cameraConnection
+
+local function watchCamera()
+    if cameraConnection then
+        cameraConnection:Disconnect()
+        cameraConnection = nil
+    end
+
+    local camera = workspace.CurrentCamera
+
+    if camera then
+        cameraConnection =
+            camera:GetPropertyChangedSignal(
+                "ViewportSize"
+            ):Connect(updateForViewport)
+    end
+end
+
+workspace:GetPropertyChangedSignal(
+    "CurrentCamera"
+):Connect(function()
+    watchCamera()
+    updateForViewport()
+end)
+
+screenGui:GetPropertyChangedSignal(
+    "AbsoluteSize"
+):Connect(updateForViewport)
+
+local normalizingQuotes = false
+
+local function refreshEditor()
+    if normalizingQuotes then
+        return
+    end
+
+    local text = codeEditor.Text or ""
+    local normalizedText = normalizeAsciiQuotes(text)
+
+    if normalizedText ~= text then
+        normalizingQuotes = true
+
+        local cursorPosition = codeEditor.CursorPosition
+        local normalizedCursorPosition
+
+        if cursorPosition >= 1 then
+            normalizedCursorPosition =
+                #normalizeAsciiQuotes(
+                    text:sub(1, cursorPosition - 1)
+                ) + 1
+        end
+
+        codeEditor.Text = normalizedText
+
+        if normalizedCursorPosition then
+            codeEditor.CursorPosition = math.min(
+                normalizedCursorPosition,
+                #normalizedText + 1
+            )
+        end
+
+        normalizingQuotes = false
+    end
+
+    updateEditorContent()
+    updateCursor()
+end
+
+codeEditor:GetPropertyChangedSignal(
+    "Text"
+):Connect(refreshEditor)
+
+codeEditor:GetPropertyChangedSignal(
+    "CursorPosition"
+):Connect(function()
+    updateCursor()
+    resetCaretBlink()
+end)
+
+codeEditor.Focused:Connect(function()
+    resetCaretBlink()
+    updateCursor()
+end)
+
+codeEditor.FocusLost:Connect(function()
+    customCaret.Visible = false
+end)
+
+editorScroll:GetPropertyChangedSignal(
+    "CanvasPosition"
+):Connect(updateLineNumberScroll)
+
+mainWindow:GetPropertyChangedSignal(
+    "AbsoluteSize"
+):Connect(updateLayout)
+
+executeButton.Activated:Connect(function()
+    executeCode(
+        codeEditor.Text,
+        "Editor code"
+    )
+end)
+
+clearEditorButton.Activated:Connect(function()
+    codeEditor.Text = ""
+    codeEditor:CaptureFocus()
+end)
+
+clearOutputButton.Activated:Connect(function()
+    clearOutput()
+end)
+
+minimizeButton.Activated:Connect(function()
+    if suppressMinimizeActivation then
+        suppressMinimizeActivation = false
+        return
+    end
+
+    setMinimized(not isMinimized)
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not screenGui.Parent then
+        return
+    end
+
+    if not usingUIDragDetector
+        and (
+            input.UserInputType
+                == Enum.UserInputType.MouseButton1
+            or input.UserInputType
+                == Enum.UserInputType.Touch
+        ) then
+
+        local point = getInputPosition(input)
+
+        if isMinimized then
+            if isPointInside(minimizeButton, point) then
+                beginDrag(input)
+            end
+        elseif isPointInside(dragHandle, point) then
+            beginDrag(input)
+        end
+    end
+
+    if gameProcessed then
+        return
+    end
+
+    local controlDown =
+        UserInputService:IsKeyDown(
+            Enum.KeyCode.LeftControl
+        )
+        or UserInputService:IsKeyDown(
+            Enum.KeyCode.RightControl
+        )
+
+    local commandDown =
+        UserInputService:IsKeyDown(
+            Enum.KeyCode.LeftMeta
+        )
+        or UserInputService:IsKeyDown(
+            Enum.KeyCode.RightMeta
+        )
+
+    local modifierDown =
+        controlDown or commandDown
+
+    if modifierDown
+        and input.KeyCode == Enum.KeyCode.Return then
+
+        executeCode(
+            codeEditor.Text,
+            "Editor code"
+        )
+        return
+    end
+
+    if modifierDown
+        and input.KeyCode == Enum.KeyCode.L then
+
+        clearOutput()
+        return
+    end
+
+    if codeEditor:IsFocused()
+        and input.KeyCode == Enum.KeyCode.Tab then
+
+        insertIndent()
+    end
+end)
+
+watchCamera()
+
+local initialSize = getResponsiveWindowSize()
+
+mainWindow.Size =
+    UDim2.fromOffset(
+        initialSize.X,
+        initialSize.Y
+    )
+
+centerWindow(initialSize)
+
+rebuildDocumentCache(codeEditor.Text or "")
+updateLayout()
+updateEditorContent()
+updateCursor()
+scheduleVisibleRender()
+
+appendOutput("initialized", "success")
