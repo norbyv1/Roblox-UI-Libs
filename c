@@ -15,6 +15,8 @@ local DEFAULT_SIZE = Vector2.new(780, 540)
 local MIN_SIZE = Vector2.new(280, 320)
 local MAX_SIZE = Vector2.new(1200, 850)
 
+local EDITOR_LEFT_PADDING = 8
+local EDITOR_TOP_PADDING = 7
 local MINIMIZED_SIZE = 56
 
 local LINE_HEIGHT = 21
@@ -596,10 +598,9 @@ CodeEditor.Name =
 
 CodeEditor.Position =
 	UDim2.fromOffset(
-		10,
-		7
+		EDITOR_LEFT_PADDING,
+		EDITOR_TOP_PADDING
 	)
-
 CodeEditor.Size =
 	UDim2.new(
 		1,
@@ -650,9 +651,11 @@ CodeEditor.TextYAlignment =
 CodeEditor.Text =
 	[[print("Hello from the editor!")]]
 
--- Text itself is drawn by syntax labels.
-CodeEditor.TextTransparency = 1
 
+CodeEditor.TextColor3 =
+	COLORS.Text
+
+CodeEditor.TextTransparency = 1
 CodeEditor.TextStrokeTransparency = 1
 
 CodeEditor.ZIndex = 5
@@ -660,8 +663,20 @@ CodeEditor.ZIndex = 5
 CodeEditor.Parent =
 	EditorScroll
 
-pcall(function()
-	CodeEditor.ShowNativeInput = false
+CodeEditor.Focused:Connect(function()
+	focusEpoch += 1
+
+	pcall(function()
+		CodeEditor.ShowNativeInput = false
+	end)
+
+	CodeEditor.TextTransparency = 1
+	CodeEditor.TextStrokeTransparency = 1
+
+	rememberSelection()
+	updateCaretVisibility()
+	updateCursor()
+	requestRender()
 end)
 
 pcall(function()
@@ -1969,12 +1984,18 @@ local function getChunk(
 		)
 
 	local source =
-		table.concat(
-			lines,
-			"\n",
-			startLine,
-			endLine
-		)
+	table.concat(
+		lines,
+		"\n",
+		startLine,
+		endLine
+	)
+
+source =
+	source:gsub(
+		"\t",
+		TAB_TEXT
+	)
 
 	local numbers =
 		table.create(
@@ -2204,11 +2225,11 @@ local function renderSyntax()
 			+ 1
 
 		local y =
-			7
-			+ (
-				chunkStart - 1
-			)
-			* LINE_HEIGHT
+	EDITOR_TOP_PADDING
+	+ (
+		chunkStart - 1
+	)
+	* LINE_HEIGHT
 
 		local syntaxLabel =
 			syntaxLabels[
@@ -2233,11 +2254,11 @@ local function renderSyntax()
 
 		syntaxLabel.Text =
 			chunk.highlighted
-		syntaxLabel.Visible = not CodeEditor:IsFocused()
+		syntaxLabel.Visible = true
 
 		syntaxLabel.Position =
 			UDim2.fromOffset(
-				10,
+				EDITOR_LEFT_PADDING,
 				y
 			)
 
@@ -2368,11 +2389,10 @@ local function updateCanvas()
 		getCanvasSize()
 
 	CodeEditor.Position =
-		UDim2.fromOffset(
-			10,
-			7
-		)
-
+	UDim2.fromOffset(
+		EDITOR_LEFT_PADDING,
+		EDITOR_TOP_PADDING
+	)
 	CodeEditor.Size =
 		UDim2.fromOffset(
 			size.X,
@@ -2405,12 +2425,23 @@ local function updateSource()
 end
 
 local function updateCaretVisibility()
-	-- Native text, selection and caret share the same layout while editing.
 	CustomCaret.Visible = false
-	CodeEditor.TextTransparency = (CodeEditor:IsFocused() or rendererFallback
-		or CodeEditor.Text == "") and 0 or 1
+
+	if rendererFallback then
+		CodeEditor.TextTransparency = 0
+
+		for _, label in pairs(syntaxLabels) do
+			label.Visible = false
+		end
+
+		return
+	end
+
+	CodeEditor.TextTransparency = 1
+	CodeEditor.TextStrokeTransparency = 1
+
 	for _, label in pairs(syntaxLabels) do
-		label.Visible = not CodeEditor:IsFocused()
+		label.Visible = true
 	end
 end
 
@@ -2680,14 +2711,14 @@ local function updateCursor()
 	end
 
 	local cursorX =
-		10 + width
+	EDITOR_LEFT_PADDING + width
 
-	local cursorY =
-		7
-		+ (
-			line - 1
-		)
-			* LINE_HEIGHT
+local cursorY =
+	EDITOR_TOP_PADDING
+	+ (
+		line - 1
+	)
+	* LINE_HEIGHT
 
 	CustomCaret.Position =
 		UDim2.fromOffset(
